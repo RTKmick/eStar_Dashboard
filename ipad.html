@@ -13,14 +13,14 @@
       /* --- 全局設定 --- */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-        background-color: #1c1c1e; /* 深色背景更顯現代感 */
+        background-color: #1c1c1e;
         margin: 0; padding: 0;
         height: 100vh; display: flex; overflow: hidden;
         color: #fff;
       }
 
       /* ========================================= */
-      /* 1. 左欄：今日客戶列表 (固定寬度 260px)    */
+      /* 1. 左欄：今日客戶列表                     */
       /* ========================================= */
       .sidebar {
         width: 260px; 
@@ -45,7 +45,6 @@
         transition: background 0.2s; background: #2c2c2e; color: #fff;
       }
       .customer-item:active { background-color: #3a3a3c; }
-      /* 選中狀態：發光藍 */
       .customer-item.selected { 
         background: linear-gradient(90deg, #0a84ff, #0056b3); 
         color: white; border-left: 4px solid #66b2ff;
@@ -56,7 +55,7 @@
       .loading-text { text-align: center; color: #8e8e93; padding: 20px; }
 
       /* ========================================= */
-      /* 2. 中欄：商品按鈕區 (現代化風格)           */
+      /* 2. 中欄：按鈕操作區 & 資訊儀表板           */
       /* ========================================= */
       .middle-content {
         flex: 1; 
@@ -64,84 +63,104 @@
         padding: 12px;
         background-color: #1c1c1e;
         height: 100%; box-sizing: border-box;
+        overflow: hidden; /* 防止整個頁面捲動 */
       }
 
-      /* 頂部資訊列 (包含手動輸入) */
+      /* 頂部資訊列 */
       .current-customer-bar {
         background: #2c2c2e; color: white; padding: 12px 15px; border-radius: 12px;
         margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         border: 1px solid #3a3a3c;
+        flex-shrink: 0; /* 防止被壓縮 */
       }
       .customer-info-area { display: flex; align-items: center; gap: 10px; }
-      
-      /* 按鈕群組 */
       .action-buttons { display: flex; gap: 8px; }
-      
       .action-btn {
         border: none; border-radius: 8px; padding: 8px 16px; font-weight: bold; cursor: pointer;
         font-size: 14px; transition: transform 0.1s;
       }
       .action-btn:active { transform: scale(0.95); }
-      .btn-manual { background-color: #ff9f0a; color: white; } /* 橘色 */
-      .btn-clear { background-color: #ff453a; color: white; } /* 紅色 */
+      .btn-manual { background-color: #ff9f0a; color: white; }
+      .btn-clear { background-color: #ff453a; color: white; }
 
-      /* 商品 Grid (保持 4 欄) */
+      /* 商品 Grid (佔用中間大部分空間) */
       .products-grid {
         display: grid; 
         grid-template-columns: repeat(4, 1fr);
-        grid-auto-rows: 100px; /* 固定高度 */
-        gap: 10px;
+        grid-auto-rows: 90px; /* 稍微調小高度，留空間給下方 */
+        gap: 8px;
         overflow-y: auto;
         align-content: start;
-        padding-bottom: 20px;
+        margin-bottom: 10px;
+        flex-grow: 1; /* 讓它佔據剩餘空間，但至少要能顯示按鈕 */
       }
 
-      /* === 現代化按鈕樣式 === */
+      /* 按鈕樣式 */
       .product-btn {
-        border: none; border-radius: 12px;
-        padding: 10px; position: relative; cursor: pointer; 
+        border: none; border-radius: 12px; padding: 8px; position: relative; cursor: pointer; 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        /* 立體光影 */
         box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
-        transition: all 0.1s ease;
-        border: 1px solid rgba(0,0,0,0.1);
+        transition: all 0.1s ease; border: 1px solid rgba(0,0,0,0.1);
       }
-      /* 按下效果：縮小 + 陰影變淺 */
-      .product-btn:active { 
-        transform: scale(0.96) translateY(2px); 
-        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-      }
-
-      .product-name { 
-        font-size: 19px; font-weight: 700; color: white; 
-        text-align: center; line-height: 1.2; margin-bottom: 18px; 
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
-      .product-price { 
-        position: absolute; bottom: 8px; right: 10px; 
-        font-size: 17px; font-weight: 600; color: rgba(255,255,255,0.9);
-      }
-
-      /* === 顏色漸層 (Gradient) === */
-      /* 藍色系 (洗衣) */
+      .product-btn:active { transform: scale(0.96) translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+      .product-name { font-size: 18px; font-weight: 700; color: white; text-align: center; line-height: 1.2; margin-bottom: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+      .product-price { position: absolute; bottom: 6px; right: 8px; font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.9); }
+      
       .grad-blue { background: linear-gradient(145deg, #007aff, #0056b3); }
-      
-      /* 紅色系 (烘衣) */
       .grad-red { background: linear-gradient(145deg, #ff453a, #c02a21); }
-      
-      /* 紫色系 (商品) */
       .grad-purple { background: linear-gradient(145deg, #bf5af2, #8930b8); }
-      
-      /* 綠色系 (服務) */
       .grad-green { background: linear-gradient(145deg, #32d74b, #248a32); }
 
+      /* === ✅ 新增：下方資訊儀表板 (橢圓燈號區) === */
+      .info-panel {
+        background-color: #2c2c2e;
+        border-top: 1px solid #3a3a3c;
+        border-radius: 12px;
+        padding: 12px;
+        min-height: 140px; /* 固定高度區域 */
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+      }
+      
+      .info-panel-title {
+        font-size: 12px; color: #8e8e93; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;
+      }
+
+      .badges-container {
+        display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
+        overflow-y: auto;
+      }
+
+      /* 膠囊標籤 (Chip) 樣式 */
+      .info-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #48484a;
+        padding: 6px 14px;
+        border-radius: 50px; /* 橢圓形 */
+        font-size: 14px;
+        color: #fff;
+        transition: all 0.2s;
+      }
+      
+      /* 標籤內的 標題: 內容 */
+      .badge-label { color: #aaa; margin-right: 6px; font-size: 0.9em; }
+      .badge-value { font-weight: bold; color: #fff; }
+
+      /* 特殊狀態顏色 */
+      .badge-highlight { border-color: #0a84ff; background: rgba(10, 132, 255, 0.15); }
+      .badge-money { border-color: #30d158; background: rgba(48, 209, 88, 0.15); }
+      .badge-warn { border-color: #ff9f0a; background: rgba(255, 159, 10, 0.15); }
+
       /* ========================================= */
-      /* 3. 右欄：收據預覽區 (紙張質感)             */
+      /* 3. 右欄：收據預覽                         */
       /* ========================================= */
       .right-panel {
         width: 320px;
-        background-color: #f2f2f7; /* 淺灰背景 */
+        background-color: #f2f2f7; 
         display: flex; flex-direction: column;
         height: 100%;
         border-left: 1px solid #3a3a3c;
@@ -183,7 +202,7 @@
       .print-btn:active { transform: scale(0.98); background-color: #333; }
 
       /* ========================================= */
-      /* 🖨️ 列印樣式 (保持不變，針對 80mm 優化)    */
+      /* 🖨️ 列印樣式 (80mm)                        */
       /* ========================================= */
       @media print {
         @page { size: 80mm auto; margin: 0; }
@@ -227,83 +246,52 @@
             <span id="currentCustomerDisplay" style="font-size:1.1em; font-weight:bold;">現場客</span>
         </div>
         <div class="action-buttons">
-            <button class="action-btn btn-manual" onclick="manualInput()">✎ 手動輸入</button>
+            <button class="action-btn btn-manual" onclick="manualInput()">✎ 手動</button>
             <button class="action-btn btn-clear" onclick="clearOrder()">✕ 清空</button>
         </div>
       </div>
 
       <div class="products-grid">
-        <button class="product-btn grad-blue" onclick="addToCart('洗衣-40(小)', 40)">
-            <span class="product-name">洗衣-40<br>(小)</span><span class="product-price">$40</span>
-        </button>
-        <button class="product-btn grad-blue" onclick="addToCart('洗衣-70(小)', 70)">
-            <span class="product-name">洗衣-70<br>(小)</span><span class="product-price">$70</span>
-        </button>
-        <button class="product-btn grad-blue" onclick="addToCart('洗衣-100(中)', 100)">
-            <span class="product-name">洗衣-100<br>(中)</span><span class="product-price">$100</span>
-        </button>
-        <button class="product-btn grad-blue" onclick="addToCart('洗衣-130(大)', 130)">
-            <span class="product-name">洗衣-130<br>(大)</span><span class="product-price">$130</span>
-        </button>
+        <button class="product-btn grad-blue" onclick="addToCart('洗衣-40(小)', 40)"><span class="product-name">洗衣-40<br>(小)</span><span class="product-price">$40</span></button>
+        <button class="product-btn grad-blue" onclick="addToCart('洗衣-70(小)', 70)"><span class="product-name">洗衣-70<br>(小)</span><span class="product-price">$70</span></button>
+        <button class="product-btn grad-blue" onclick="addToCart('洗衣-100(中)', 100)"><span class="product-name">洗衣-100<br>(中)</span><span class="product-price">$100</span></button>
+        <button class="product-btn grad-blue" onclick="addToCart('洗衣-130(大)', 130)"><span class="product-name">洗衣-130<br>(大)</span><span class="product-price">$130</span></button>
 
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 10元', 10)">
-            <span class="product-name">烘衣 10元</span><span class="product-price">$10</span>
-        </button>
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 20元', 20)">
-            <span class="product-name">烘衣 20元</span><span class="product-price">$20</span>
-        </button>
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 40元', 40)">
-            <span class="product-name">烘衣 40元</span><span class="product-price">$40</span>
-        </button>
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 60元', 60)">
-            <span class="product-name">烘衣 60元</span><span class="product-price">$60</span>
-        </button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 10元', 10)"><span class="product-name">烘衣 10元</span><span class="product-price">$10</span></button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 20元', 20)"><span class="product-name">烘衣 20元</span><span class="product-price">$20</span></button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 40元', 40)"><span class="product-name">烘衣 40元</span><span class="product-price">$40</span></button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 60元', 60)"><span class="product-name">烘衣 60元</span><span class="product-price">$60</span></button>
 
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 80元', 80)">
-            <span class="product-name">烘衣 80元</span><span class="product-price">$80</span>
-        </button>
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 100元', 100)">
-            <span class="product-name">烘衣 100元</span><span class="product-price">$100</span>
-        </button>
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 120元', 120)">
-            <span class="product-name">烘衣 120元</span><span class="product-price">$120</span>
-        </button>
-        <button class="product-btn grad-red" onclick="addToCart('烘衣 140元', 140)">
-            <span class="product-name">烘衣 140元</span><span class="product-price">$140</span>
-        </button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 80元', 80)"><span class="product-name">烘衣 80元</span><span class="product-price">$80</span></button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 100元', 100)"><span class="product-name">烘衣 100元</span><span class="product-price">$100</span></button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 120元', 120)"><span class="product-name">烘衣 120元</span><span class="product-price">$120</span></button>
+        <button class="product-btn grad-red" onclick="addToCart('烘衣 140元', 140)"><span class="product-name">烘衣 140元</span><span class="product-price">$140</span></button>
 
-        <button class="product-btn grad-purple" onclick="addToCart('加洗劑', 10)">
-            <span class="product-name">加洗劑 10</span><span class="product-price">$10</span>
-        </button>
-        <button class="product-btn grad-purple" onclick="addToCart('靜電香紙', 10)">
-            <span class="product-name">靜電香紙 10</span><span class="product-price">$10</span>
-        </button>
-        <button class="product-btn grad-purple" onclick="addToCart('裝衣袋', 10)">
-            <span class="product-name">裝衣袋 10</span><span class="product-price">$10</span>
-        </button>
-        <button class="product-btn grad-purple" onclick="addToCart('洗衣豆', 30)">
-            <span class="product-name">洗衣豆 30</span><span class="product-price">$30</span>
-        </button>
+        <button class="product-btn grad-purple" onclick="addToCart('加洗劑', 10)"><span class="product-name">加洗劑 10</span><span class="product-price">$10</span></button>
+        <button class="product-btn grad-purple" onclick="addToCart('靜電香紙', 10)"><span class="product-name">靜電香紙 10</span><span class="product-price">$10</span></button>
+        <button class="product-btn grad-purple" onclick="addToCart('裝衣袋', 10)"><span class="product-name">裝衣袋 10</span><span class="product-price">$10</span></button>
+        <button class="product-btn grad-purple" onclick="addToCart('洗衣豆', 30)"><span class="product-name">洗衣豆 30</span><span class="product-price">$30</span></button>
 
-        <button class="product-btn grad-green" onclick="addToCart('代摺費用', 20)">
-            <span class="product-name">代摺費用</span><span class="product-price">$20</span>
-        </button>
+        <button class="product-btn grad-green" onclick="addToCart('代摺費用', 20)"><span class="product-name">代摺費用</span><span class="product-price">$20</span></button>
       </div>
+
+      <div class="info-panel">
+        <div class="info-panel-title">客戶詳細資訊 (GAS 欄位 D~L)</div>
+        <div id="customerDetailBadges" class="badges-container">
+            <span style="color:#555; font-size:14px; padding:10px;">尚未選擇客戶</span>
+        </div>
+      </div>
+
     </div>
 
     <div class="right-panel">
         <div class="receipt-preview-header">單據預覽</div>
-        
         <div class="cart-list" id="cartList">
-            <div style="text-align:center; color:#999; margin-top:50px;">
-                尚未加入項目<br>請點選左側商品
-            </div>
+            <div style="text-align:center; color:#999; margin-top:50px;">尚未加入項目</div>
         </div>
-
         <div class="checkout-footer">
             <div class="total-row">
-                <span>總計</span>
-                <span style="color:#007aff;">$<span id="totalPrice">0</span></span>
+                <span>總計</span><span style="color:#007aff;">$<span id="totalPrice">0</span></span>
             </div>
             <button class="print-btn" onclick="printReceipt()">確認並列印</button>
         </div>
@@ -337,6 +325,7 @@
       let currentCustomer = null;
       let cart = [];
 
+      // API
       function callApi(action, data = {}) {
         return fetch(GAS_API_URL, {
             method: "POST",
@@ -347,9 +336,7 @@
             if(result.error) throw new Error(result.error);
             return result;
         })
-        .catch(err => {
-            console.error(err);
-        });
+        .catch(err => { console.error(err); });
       }
 
       function loadTodayCustomers() {
@@ -376,27 +363,73 @@
           });
       }
 
+      // ✅ 修改：選擇客戶時，填充下方燈號
       function selectCustomer(cust, element) {
         currentCustomer = cust;
         document.getElementById('currentCustomerDisplay').innerText = `${cust.name || '未填寫'} (${cust.phone})`;
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
         if(element) element.classList.add('selected');
+
+        // --- 處理下方燈號 (GAS D~L欄) ---
+        const badgeContainer = document.getElementById('customerDetailBadges');
+        badgeContainer.innerHTML = ''; // 清空
+
+        // ⚠️ 這裡我用「模擬資料」來展示效果，因為您的後端 API 還沒傳這些欄位回來
+        // 等您 GAS 改好後，請把下方這段換成真實資料 loop
+        
+        // 假資料 Demo: 假設這是從 D~L 欄讀到的
+        const mockData = [
+            { label: "會員等級", val: "VIP 金卡", type: "highlight" },
+            { label: "儲值餘額", val: "$1,250", type: "money" },
+            { label: "點數", val: "300點", type: "normal" },
+            { label: "備註", val: "喜歡溫水洗", type: "warn" },
+            { label: "上次消費", val: "2023/12/10", type: "normal" },
+            { label: "洗衣習慣", val: "自備洗劑", type: "normal" },
+            { label: "代號", val: "K882", type: "normal" }
+        ];
+
+        // 產生燈號 HTML
+        let html = '';
+        mockData.forEach(info => {
+            let classType = '';
+            if(info.type === 'highlight') classType = 'badge-highlight';
+            if(info.type === 'money') classType = 'badge-money';
+            if(info.type === 'warn') classType = 'badge-warn';
+
+            html += `
+                <div class="info-badge ${classType}">
+                    <span class="badge-label">${info.label}:</span>
+                    <span class="badge-value">${info.val}</span>
+                </div>
+            `;
+        });
+        badgeContainer.innerHTML = html;
       }
 
-      // === 新增：手動輸入功能 ===
       function manualInput() {
-        const input = prompt("請輸入客戶手機或備註 (例如: 0912-345-678 張先生)", "");
+        const input = prompt("請輸入客戶手機或備註", "");
         if (input && input.trim() !== "") {
-            // 建立一個臨時客戶物件
-            currentCustomer = {
-                name: "手動輸入",
-                phone: input.trim()
-            };
-            // 更新畫面
+            currentCustomer = { name: "手動輸入", phone: input.trim() };
             document.getElementById('currentCustomerDisplay').innerText = input.trim();
-            // 清除左側的選取狀態
             document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
+            
+            // 手動輸入時，下方顯示簡單提示
+            document.getElementById('customerDetailBadges').innerHTML = `
+                <div class="info-badge badge-warn"><span class="badge-value">手動輸入模式</span></div>
+            `;
         }
+      }
+
+      function clearOrder() {
+        cart = [];
+        currentCustomer = null;
+        document.getElementById('currentCustomerDisplay').innerText = "現場客";
+        document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
+        
+        // 清空燈號
+        document.getElementById('customerDetailBadges').innerHTML = '<span style="color:#555; font-size:14px; padding:10px;">尚未選擇客戶</span>';
+        
+        renderCart();
       }
 
       function addToCart(name, price) {
@@ -412,13 +445,11 @@
       function renderCart() {
         const container = document.getElementById('cartList');
         const totalEl = document.getElementById('totalPrice');
-        
         if (cart.length === 0) {
           container.innerHTML = '<div style="text-align:center; color:#999; margin-top:50px;">尚未加入項目</div>';
           totalEl.innerText = '0';
           return;
         }
-
         let html = '';
         let total = 0;
         cart.forEach((item, index) => {
@@ -435,30 +466,14 @@
         totalEl.innerText = total;
       }
 
-      function clearOrder() {
-        cart = [];
-        currentCustomer = null;
-        document.getElementById('currentCustomerDisplay').innerText = "現場客";
-        document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
-        renderCart();
-      }
-
       function printReceipt() {
-        if (cart.length === 0) {
-          alert("購物車是空的！");
-          return;
-        }
+        if (cart.length === 0) { alert("購物車是空的！"); return; }
         const now = new Date();
         document.getElementById('printTime').innerText = now.toLocaleString('zh-TW', {hour12:false});
         
         let customerText = "現場客";
         if (currentCustomer) {
-            // 如果是手動輸入的，格式微調
-            if (currentCustomer.name === "手動輸入") {
-                customerText = currentCustomer.phone;
-            } else {
-                customerText = `${currentCustomer.name || ''} ${currentCustomer.phone}`;
-            }
+            customerText = currentCustomer.name === "手動輸入" ? currentCustomer.phone : `${currentCustomer.name || ''} ${currentCustomer.phone}`;
         }
         document.getElementById('printCustomer').innerText = customerText;
         
@@ -466,11 +481,7 @@
         let total = 0;
         cart.forEach(item => {
           total += item.price;
-          itemsHtml += `
-            <div class="receipt-item">
-                <span>${item.name}</span>
-                <span>$${item.price}</span>
-            </div>`;
+          itemsHtml += `<div class="receipt-item"><span>${item.name}</span><span>$${item.price}</span></div>`;
         });
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
