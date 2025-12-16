@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
-    <title>店內 POS 系統 (GitHub 版)</title>
+    <title>店內 POS 系統</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <style>
-      /* --- 樣式區 (保持您原本喜歡的樣子) --- */
+      /* --- 全局設定 --- */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background-color: #f2f2f7;
-        margin: 0; padding: 0; height: 100vh; display: flex; overflow: hidden;
+        margin: 0; padding: 0;
+        height: 100vh; display: flex; overflow: hidden;
       }
+
+      /* --- 左側：今日客戶列表 --- */
       .sidebar {
         width: 300px; background-color: #ffffff; border-right: 1px solid #d1d1d6;
         display: flex; flex-direction: column; height: 100%;
@@ -22,105 +25,301 @@
         padding: 15px; background-color: #eee; font-weight: bold;
         display: flex; justify-content: space-between; align-items: center;
       }
+      .refresh-btn {
+        background: white; border: 1px solid #ccc; border-radius: 4px;
+        padding: 5px 10px; cursor: pointer; font-size: 14px;
+      }
       .customer-list { overflow-y: auto; flex: 1; }
-      .customer-item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+      .customer-item {
+        padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+        transition: background 0.2s;
+      }
       .customer-item:active { background-color: #e5e5ea; }
+      .customer-item.selected { background-color: #007aff; color: white; }
+      .customer-item.selected .customer-time { color: #ddd; }
+      .customer-phone { font-weight: bold; font-size: 1.1em; }
+      .customer-time { font-size: 0.85em; color: #666; margin-top: 4px; }
+      .loading-text { text-align: center; color: #999; padding: 20px; }
+
+      /* --- 右側：操作區 --- */
       .main-content {
         flex: 1; display: flex; flex-direction: column; padding: 10px;
-        justify-content: center; align-items: center; text-align: center;
+        height: 100%; box-sizing: border-box;
       }
-      .loading { color: gray; padding: 20px; text-align: center; }
-      button {
-        padding: 10px 20px; font-size: 16px; background: #007aff; color: white;
-        border: none; border-radius: 8px; cursor: pointer;
+
+      /* 客戶資訊卡 */
+      .current-customer-card {
+        background: white; padding: 10px 15px; border-radius: 10px;
+        margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       }
+      .customer-info-text { font-size: 1.2em; color: #333; font-weight: bold;}
+
+      /* 商品按鈕區 (Grid) */
+      .products-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+        flex: 1; overflow-y: auto; margin-bottom: 10px;
+      }
+      .product-btn {
+        border: none; border-radius: 12px; padding: 10px;
+        font-size: 18px; font-weight: bold; color: white;
+        cursor: pointer; display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.1s;
+      }
+      .product-btn:active { transform: scale(0.96); }
+      .product-btn span { font-size: 0.8em; font-weight: normal; margin-top: 5px; opacity: 0.9; }
+      
+      .btn-wash { background-color: #007aff; } /* 藍 */
+      .btn-dry { background-color: #ff9500; }  /* 橘 */
+      .btn-item { background-color: #34c759; } /* 綠 */
+
+      /* 結帳區 */
+      .checkout-section {
+        background: white; border-radius: 12px; padding: 15px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      }
+      .order-summary {
+        margin-bottom: 10px; max-height: 100px; overflow-y: auto;
+        font-size: 0.9em; color: #555; border-bottom: 1px dashed #ccc; padding-bottom: 5px;
+      }
+      .order-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
+      .total-area {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 1.5em; font-weight: bold; margin-bottom: 10px;
+      }
+      .print-btn {
+        width: 100%; background-color: #1c1c1e; color: white;
+        border: none; padding: 15px; font-size: 20px; border-radius: 10px; cursor: pointer;
+      }
+
+      /* --- 列印專用樣式 --- */
+      @media print {
+        body * { visibility: hidden; }
+        #receipt-area, #receipt-area * { visibility: visible; }
+        #receipt-area {
+          position: absolute; left: 0; top: 0; width: 100%;
+          color: black; background: white; padding: 10px;
+        }
+        /* 隱藏不想印出的東西 */
+        .sidebar, .main-content { display: none; }
+      }
+      #receipt-area { display: none; } /* 平常隱藏 */
+
     </style>
-  </head>
-  <body>
+</head>
+<body>
 
     <div class="sidebar">
       <div class="sidebar-header">
         今日 KIOSK 客戶
-        <button onclick="loadTodayCustomers()" style="font-size:12px; padding:5px 10px;">刷新</button>
+        <button class="refresh-btn" onclick="loadTodayCustomers()">刷新</button>
       </div>
       <div class="customer-list" id="customerList">
-        <div class="loading">載入中...</div>
+        <div class="loading-text">載入中...</div>
       </div>
     </div>
 
     <div class="main-content">
-      <h2>GitHub 連線測試</h2>
-      <p id="statusText">請點擊左側刷新按鈕...</p>
-      <div id="debugInfo" style="color:red; font-size:12px; margin-top:20px;"></div>
+      
+      <div class="current-customer-card">
+        <div>
+          <span style="color:#888; font-size:0.9em;">當前客戶：</span>
+          <span class="customer-info-text" id="currentCustomerDisplay">尚未選擇 (現場客)</span>
+        </div>
+        <button onclick="clearOrder()" style="background:#efeff4; border:none; padding:8px 12px; border-radius:6px; color:#ff3b30; font-weight:bold;">重置</button>
+      </div>
+
+      <div class="products-grid">
+        <button class="product-btn btn-wash" onclick="addToCart('洗衣 (小)', 70)">洗衣 (小) <span>$70</span></button>
+        <button class="product-btn btn-wash" onclick="addToCart('洗衣 (中)', 100)">洗衣 (中) <span>$100</span></button>
+        <button class="product-btn btn-wash" onclick="addToCart('洗衣 (大)', 130)">洗衣 (大) <span>$130</span></button>
+        
+        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (10分)', 10)">烘衣 <span>$10</span></button>
+        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (標準)', 80)">烘衣 <span>$80</span></button>
+        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (加時)', 100)">烘衣 <span>$100</span></button>
+        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (特長)', 140)">烘衣 <span>$140</span></button>
+
+        <button class="product-btn btn-item" onclick="addToCart('靜電香紙', 10)">靜電香紙 <span>$10</span></button>
+        <button class="product-btn btn-item" onclick="addToCart('裝衣袋', 10)">裝衣袋 <span>$10</span></button>
+        <button class="product-btn btn-item" onclick="addToCart('洗衣球', 30)">洗衣球 <span>$30</span></button>
+      </div>
+
+      <div class="checkout-section">
+        <div class="order-summary" id="orderSummary">
+          <div style="text-align:center; color:#999; padding:10px;">點擊上方按鈕加入項目</div>
+        </div>
+        
+        <div class="total-area">
+          <span>總金額</span>
+          <span style="color:#007aff;">$ <span id="totalPrice">0</span></span>
+        </div>
+        
+        <button class="print-btn" onclick="printReceipt()">確認並列印單據</button>
+      </div>
+    </div>
+
+    <div id="receipt-area">
+      <div style="text-align: center; font-family: monospace; font-size: 14px;">
+        <h2>洗衣店收執聯</h2>
+        <p>================================</p>
+        <p style="text-align:left;">時間: <span id="printTime"></span></p>
+        <p style="text-align:left;">客戶: <span id="printCustomer"></span></p>
+        <p>--------------------------------</p>
+        <div id="printItems" style="text-align:left; line-height: 1.5;">
+          </div>
+        <p>--------------------------------</p>
+        <h2 style="text-align:right;">總計: $<span id="printTotal"></span></h2>
+        <br>
+        <p>謝謝光臨！</p>
+        <p style="font-size: 10px;">powered by eStarCRM</p>
+      </div>
     </div>
 
     <script>
-      // ===============================================================
-      // ⚠️⚠️⚠️ 關鍵設定：請在這裡貼上您的 Google Apps Script 網址 ⚠️⚠️⚠️
-      // ===============================================================
+      // ==========================================
+      // ⚠️ 請填入您的 Apps Script 網址 (與剛剛測試成功的一樣)
+      // ==========================================
       const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzEeAp8jubDbTaz8OJTLOvDd5NkgvXPQXUVURwklxzZ0Lzd2PrDSqWouIejcDifev9f/exec"; 
-      // (請確認結尾是 /exec，且不要有 ?mode=ipad)
 
-      // --- API 呼叫核心 (取代 google.script.run) ---
+      // === 變數 ===
+      let currentCustomer = null;
+      let cart = [];
+
+      // === API 核心 ===
       function callApi(action, data = {}) {
-        document.getElementById('debugInfo').innerText = "連線中...";
-        
-        // 使用 POST 發送請求
         return fetch(GAS_API_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: action, data: data }) 
-          // 這裡送出 action (例如 'getTodayRawData') 給 Code.gs 的 doPost 處理
+            method: "POST",
+            body: JSON.stringify({ action: action, data: data })
         })
-        .then(response => response.json()) // 解析回傳的 JSON
+        .then(res => res.json())
         .then(result => {
-          document.getElementById('debugInfo').innerText = "";
-          if (result.error) throw new Error(result.error);
-          return result;
+            if(result.error) throw new Error(result.error);
+            return result;
         })
         .catch(err => {
-          console.error(err);
-          document.getElementById('debugInfo').innerText = "錯誤: " + err.message;
-          alert("連線失敗，請檢查網址或網路。\n" + err.message);
+            console.error(err);
+            alert("連線發生錯誤：" + err.message);
         });
       }
 
-      // --- 功能：載入今日客戶 ---
+      // === 功能 1: 載入今日客戶 (自動執行) ===
       function loadTodayCustomers() {
         const listEl = document.getElementById('customerList');
-        listEl.innerHTML = '<div class="loading">資料讀取中...</div>';
-
-        // 呼叫後端 API
+        listEl.innerHTML = '<div class="loading-text">更新資料中...</div>';
+        
         callApi('getTodayRawData')
           .then(data => {
-            listEl.innerHTML = ''; // 清空列表
+             listEl.innerHTML = '';
+             if (!data || data.length === 0) {
+               listEl.innerHTML = '<div class="loading-text">今日尚無 KIOSK 資料</div>';
+               return;
+             }
 
-            if (!data || data.length === 0) {
-              listEl.innerHTML = '<div class="loading">今天尚無 KIOSK 資料</div>';
-              document.getElementById('statusText').innerText = "連線成功，但目前無資料";
-              return;
-            }
-
-            document.getElementById('statusText').innerText = `連線成功！取得 ${data.length} 筆資料`;
-
-            // 顯示資料
-            data.forEach(cust => {
-              const div = document.createElement('div');
-              div.className = 'customer-item';
-              div.innerHTML = `
-                <div style="font-weight:bold;">${cust.phone}</div>
-                <div style="font-size:0.8em; color:#666;">${cust.time} - ${cust.name || '未填寫'}</div>
-              `;
-              div.onclick = () => {
-                 document.getElementById('statusText').innerText = `您選擇了：${cust.name}`;
-              };
-              listEl.appendChild(div);
-            });
+             data.forEach(cust => {
+               const div = document.createElement('div');
+               div.className = 'customer-item';
+               div.innerHTML = `
+                 <div class="customer-phone">${cust.phone}</div>
+                 <div class="customer-time">${cust.time} - ${cust.name || '未填寫'}</div>
+               `;
+               // 點擊事件
+               div.onclick = () => selectCustomer(cust, div);
+               listEl.appendChild(div);
+             });
           });
       }
 
-      // 網頁開啟時自動載入
+      // === 功能 2: 選擇客戶 ===
+      function selectCustomer(cust, element) {
+        currentCustomer = cust;
+        document.getElementById('currentCustomerDisplay').innerText = `${cust.name || '未填寫'} (${cust.phone})`;
+        
+        // UI 變色
+        document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
+        if(element) element.classList.add('selected');
+      }
+
+      // === 功能 3: 購物車邏輯 ===
+      function addToCart(name, price) {
+        cart.push({ name, price });
+        renderCart();
+      }
+
+      function removeItem(index) {
+        cart.splice(index, 1);
+        renderCart();
+      }
+
+      function renderCart() {
+        const container = document.getElementById('orderSummary');
+        const totalEl = document.getElementById('totalPrice');
+        
+        if (cart.length === 0) {
+          container.innerHTML = '<div style="text-align:center; color:#999; padding:10px;">購物車是空的</div>';
+          totalEl.innerText = '0';
+          return;
+        }
+
+        let html = '';
+        let total = 0;
+        cart.forEach((item, index) => {
+          total += item.price;
+          html += `
+            <div class="order-item">
+              <span>${item.name}</span>
+              <span>$${item.price} <a href="#" onclick="removeItem(${index})" style="color:red;text-decoration:none;margin-left:5px;">✕</a></span>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+        totalEl.innerText = total;
+      }
+
+      function clearOrder() {
+        cart = [];
+        currentCustomer = null;
+        document.getElementById('currentCustomerDisplay').innerText = "尚未選擇 (現場客)";
+        document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
+        renderCart();
+      }
+
+      // === 功能 4: 列印與結帳 ===
+      function printReceipt() {
+        if (cart.length === 0) {
+          alert("購物車是空的，無法結帳！");
+          return;
+        }
+
+        // 1. 填寫收據內容
+        const now = new Date();
+        document.getElementById('printTime').innerText = now.toLocaleString('zh-TW', {hour12:false});
+        
+        let customerText = "現場客";
+        if (currentCustomer) {
+            customerText = `${currentCustomer.name || ''} ${currentCustomer.phone}`;
+        }
+        document.getElementById('printCustomer').innerText = customerText;
+        
+        let itemsHtml = '';
+        let total = 0;
+        cart.forEach(item => {
+          total += item.price;
+          itemsHtml += `<div style="display:flex; justify-content:space-between;"><span>${item.name}</span><span>$${item.price}</span></div>`;
+        });
+        document.getElementById('printItems').innerHTML = itemsHtml;
+        document.getElementById('printTotal').innerText = total;
+
+        // 2. 執行列印 (瀏覽器會跳出視窗)
+        window.print();
+
+        // 3. (未來擴充) 這裡可以呼叫 API 把訂單存回 Google Sheet
+        // saveOrderToGoogleSheet(cart, currentCustomer);
+      }
+
+      // 初始化
       window.onload = loadTodayCustomers;
 
     </script>
-  </body>
+</body>
 </html>
