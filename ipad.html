@@ -1,102 +1,126 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8">
-    <title>店內 POS 系統</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>店內 POS 系統 (GitHub 版)</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <style>
-        /* (這裡請貼上之前給您的 CSS 樣式，為了版面簡潔我先省略) */
-        /* ... CSS ... */
-        body { font-family: sans-serif; padding: 20px; background: #f2f2f7; }
-        .loading { color: gray; text-align: center; margin-top: 20px; }
-        /* 簡單示意樣式 */
-        .sidebar { float: left; width: 30%; background: white; height: 90vh; overflow-y: scroll; }
-        .main-content { float: right; width: 68%; }
-        .customer-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .customer-item:hover { background: #f0f0f0; }
+      /* --- 樣式區 (保持您原本喜歡的樣子) --- */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #f2f2f7;
+        margin: 0; padding: 0; height: 100vh; display: flex; overflow: hidden;
+      }
+      .sidebar {
+        width: 300px; background-color: #ffffff; border-right: 1px solid #d1d1d6;
+        display: flex; flex-direction: column; height: 100%;
+      }
+      .sidebar-header {
+        padding: 15px; background-color: #eee; font-weight: bold;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .customer-list { overflow-y: auto; flex: 1; }
+      .customer-item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+      .customer-item:active { background-color: #e5e5ea; }
+      .main-content {
+        flex: 1; display: flex; flex-direction: column; padding: 10px;
+        justify-content: center; align-items: center; text-align: center;
+      }
+      .loading { color: gray; padding: 20px; text-align: center; }
+      button {
+        padding: 10px 20px; font-size: 16px; background: #007aff; color: white;
+        border: none; border-radius: 8px; cursor: pointer;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
 
     <div class="sidebar">
-      <div style="padding:10px; font-weight:bold; background:#eee;">
+      <div class="sidebar-header">
         今日 KIOSK 客戶
-        <button onclick="loadTodayCustomers()" style="float:right;">刷新</button>
+        <button onclick="loadTodayCustomers()" style="font-size:12px; padding:5px 10px;">刷新</button>
       </div>
-      <div id="customerList" class="loading">載入中...</div>
+      <div class="customer-list" id="customerList">
+        <div class="loading">載入中...</div>
+      </div>
     </div>
 
     <div class="main-content">
-        <h2>當前客戶：<span id="currentCustomerDisplay">尚未選擇</span></h2>
-        <p>測試模式：請點選左側客戶，或使用下方按鈕。</p>
-        </div>
+      <h2>GitHub 連線測試</h2>
+      <p id="statusText">請點擊左側刷新按鈕...</p>
+      <div id="debugInfo" style="color:red; font-size:12px; margin-top:20px;"></div>
+    </div>
 
-<script>
-    // ==========================================
-    // ⚠️ 設定區：請填入您的 Apps Script 網址
-    // ==========================================
-    const GAS_API_URL = "https://script.google.com/macros/s/您的發布網址/exec"; 
+    <script>
+      // ===============================================================
+      // ⚠️⚠️⚠️ 關鍵設定：請在這裡貼上您的 Google Apps Script 網址 ⚠️⚠️⚠️
+      // ===============================================================
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzEeAp8jubDbTaz8OJTLOvDd5NkgvXPQXUVURwklxzZ0Lzd2PrDSqWouIejcDifev9f/exec"; 
+      // (請確認結尾是 /exec，且不要有 ?mode=ipad)
 
-    // 通用的 API 呼叫函式
-    function callApi(action, data = {}) {
-        // 使用 POST 方式呼叫 Apps Script
+      // --- API 呼叫核心 (取代 google.script.run) ---
+      function callApi(action, data = {}) {
+        document.getElementById('debugInfo').innerText = "連線中...";
+        
+        // 使用 POST 發送請求
         return fetch(GAS_API_URL, {
-            method: "POST",
-            mode: "cors", // 跨網域
-            body: JSON.stringify({
-                action: action,
-                data: data
-            })
+          method: "POST",
+          body: JSON.stringify({ action: action, data: data }) 
+          // 這裡送出 action (例如 'getTodayRawData') 給 Code.gs 的 doPost 處理
         })
-        .then(response => response.json())
+        .then(response => response.json()) // 解析回傳的 JSON
         .then(result => {
-            if (result.error) throw new Error(result.error);
-            return result;
+          document.getElementById('debugInfo').innerText = "";
+          if (result.error) throw new Error(result.error);
+          return result;
         })
         .catch(err => {
-            alert("連線錯誤：" + err.message);
-            console.error(err);
+          console.error(err);
+          document.getElementById('debugInfo').innerText = "錯誤: " + err.message;
+          alert("連線失敗，請檢查網址或網路。\n" + err.message);
         });
-    }
+      }
 
-    // 功能 1: 載入今日客戶
-    function loadTodayCustomers() {
-        document.getElementById('customerList').innerHTML = '載入中...';
-        
-        callApi('getTodayRawData') // 呼叫 Code.gs 的新函式
-            .then(data => {
-                const listEl = document.getElementById('customerList');
-                listEl.innerHTML = '';
-                
-                if (data.length === 0) {
-                    listEl.innerHTML = '<div style="padding:10px;">目前尚無資料</div>';
-                    return;
-                }
+      // --- 功能：載入今日客戶 ---
+      function loadTodayCustomers() {
+        const listEl = document.getElementById('customerList');
+        listEl.innerHTML = '<div class="loading">資料讀取中...</div>';
 
-                data.forEach(cust => {
-                    const div = document.createElement('div');
-                    div.className = 'customer-item';
-                    div.innerHTML = `
-                        <div style="font-weight:bold;">${cust.phone}</div>
-                        <div style="font-size:0.8em; color:#666;">${cust.time} - ${cust.name || '未填寫'}</div>
-                    `;
-                    div.onclick = () => selectCustomer(cust);
-                    listEl.appendChild(div);
-                });
+        // 呼叫後端 API
+        callApi('getTodayRawData')
+          .then(data => {
+            listEl.innerHTML = ''; // 清空列表
+
+            if (!data || data.length === 0) {
+              listEl.innerHTML = '<div class="loading">今天尚無 KIOSK 資料</div>';
+              document.getElementById('statusText').innerText = "連線成功，但目前無資料";
+              return;
+            }
+
+            document.getElementById('statusText').innerText = `連線成功！取得 ${data.length} 筆資料`;
+
+            // 顯示資料
+            data.forEach(cust => {
+              const div = document.createElement('div');
+              div.className = 'customer-item';
+              div.innerHTML = `
+                <div style="font-weight:bold;">${cust.phone}</div>
+                <div style="font-size:0.8em; color:#666;">${cust.time} - ${cust.name || '未填寫'}</div>
+              `;
+              div.onclick = () => {
+                 document.getElementById('statusText').innerText = `您選擇了：${cust.name}`;
+              };
+              listEl.appendChild(div);
             });
-    }
+          });
+      }
 
-    // 功能 2: 選擇客戶
-    function selectCustomer(cust) {
-        document.getElementById('currentCustomerDisplay').innerText = `${cust.name} (${cust.phone})`;
-        // 這裡可以接著寫自動帶入購物車的邏輯
-    }
+      // 網頁開啟時自動載入
+      window.onload = loadTodayCustomers;
 
-    // 頁面載入時自動執行
-    window.onload = loadTodayCustomers;
-
-</script>
-</body>
+    </script>
+  </body>
 </html>
