@@ -13,12 +13,12 @@
       /* --- 全局設定 --- */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background-color: #333; /* 背景改深色，對比更強 */
+        background-color: #333;
         margin: 0; padding: 0;
         height: 100vh; display: flex; overflow: hidden;
       }
 
-      /* --- 左側：今日客戶列表 (保持原樣，稍微優化配色) --- */
+      /* --- 左側：今日客戶列表 --- */
       .sidebar {
         width: 280px; 
         background-color: #f5f5f7; 
@@ -50,8 +50,8 @@
       /* --- 右側：操作區 --- */
       .main-content {
         flex: 1; display: flex; flex-direction: column; 
-        padding: 8px; /* 縮小邊距 */
-        background-color: #222; /* 模擬舊 APP 深色背景 */
+        padding: 8px;
+        background-color: #222;
         height: 100%; box-sizing: border-box;
       }
 
@@ -62,20 +62,20 @@
       }
       .customer-info-text { font-size: 1.1em; font-weight: bold; color: #fff;}
 
-      /* --- 商品按鈕區 (Grid 核心修改) --- */
+      /* --- 商品按鈕 Grid (4欄) --- */
       .products-grid {
         display: grid; 
-        grid-template-columns: repeat(4, 1fr); /* 改為 4 欄 */
-        grid-auto-rows: 100px; /* 固定高度，讓按鈕整齊 */
-        gap: 6px; /* 按鈕間距 */
+        grid-template-columns: repeat(4, 1fr);
+        grid-auto-rows: 100px;
+        gap: 6px;
         flex: 1; overflow-y: auto; margin-bottom: 8px;
         align-content: start;
       }
 
       .product-btn {
-        border: none; border-radius: 6px; /* 圓角稍微小一點，像舊APP */
+        border: none; border-radius: 6px;
         padding: 5px;
-        position: relative; /* 為了絕對定位價格 */
+        position: relative;
         cursor: pointer; 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
         transition: transform 0.05s, opacity 0.1s;
@@ -83,11 +83,10 @@
       }
       .product-btn:active { transform: scale(0.96); opacity: 0.9; }
 
-      /* 按鈕內的文字樣式 */
       .product-name {
         font-size: 18px; font-weight: bold; color: white;
         text-align: center; line-height: 1.2;
-        margin-bottom: 15px; /* 留位置給價格 */
+        margin-bottom: 15px;
       }
       .product-price {
         position: absolute;
@@ -96,18 +95,17 @@
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
 
-      /* --- 顏色類別 (完全仿照舊APP) --- */
-      .btn-blue   { background-color: #0288d1; } /* 洗衣 */
-      .btn-red    { background-color: #d32f2f; } /* 烘衣 */
-      .btn-purple { background-color: #7b1fa2; } /* 商品 */
-      .btn-green  { background-color: #388e3c; } /* 服務 */
+      /* 顏色定義 */
+      .btn-blue   { background-color: #0288d1; }
+      .btn-red    { background-color: #d32f2f; }
+      .btn-purple { background-color: #7b1fa2; }
+      .btn-green  { background-color: #388e3c; }
 
-      /* 結帳與購物車區 (置底) */
+      /* 結帳與購物車區 */
       .checkout-section {
         background: #333; border-top: 1px solid #555;
         padding-top: 5px;
       }
-      /* 讓購物車清單稍微縮小，不要佔據太多按鈕空間 */
       .order-summary {
         background: #fff; border-radius: 6px;
         margin-bottom: 5px; max-height: 80px; overflow-y: auto;
@@ -132,16 +130,51 @@
          background-color: #ff3b30; color: white; border: none; border-radius: 6px; width: 60px; font-weight: bold;
       }
 
-      /* --- 列印隱藏區 --- */
+      /* ========================================= */
+      /* ✅ 列印專用樣式 (針對 TSP143 80mm 優化)  */
+      /* ========================================= */
       @media print {
-        body * { visibility: hidden; }
-        #receipt-area, #receipt-area * { visibility: visible; }
-        #receipt-area {
-          position: absolute; left: 0; top: 0; width: 100%;
-          color: black; background: white; padding: 10px;
+        /* 設定紙張大小：寬度 80mm，高度自動 */
+        @page {
+            size: 80mm auto;
+            margin: 0; 
         }
-        .sidebar, .main-content { display: none; }
+
+        /* 隱藏網頁介面 */
+        body * { visibility: hidden; height: 0; overflow: hidden; }
+        .sidebar, .main-content { display: none !important; }
+
+        /* 顯示收據區域 */
+        #receipt-area, #receipt-area * { visibility: visible; height: auto; }
+        
+        #receipt-area {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 72mm; /* 80mm 紙張實際可印區域約 72mm */
+          padding: 5px;
+          margin: 0;
+          color: black;
+          background: white;
+          font-family: 'Courier New', monospace; /* 使用等寬字體，對齊較準 */
+          font-size: 14px;
+          line-height: 1.4;
+          display: block !important;
+        }
+
+        /* 收據細節優化 */
+        .receipt-header { text-align: center; margin-bottom: 10px; }
+        .receipt-title { font-size: 1.5em; font-weight: bold; margin: 0; }
+        .receipt-divider { border-top: 1px dashed #000; margin: 5px 0; }
+        .receipt-item { display: flex; justify-content: space-between; }
+        .receipt-total { font-size: 1.5em; font-weight: bold; text-align: right; margin-top: 10px; }
+        .receipt-footer { text-align: center; margin-top: 10px; font-size: 12px; }
+        
+        /* ⚠️ 關鍵：底部預留切紙空間 (Feed) */
+        .receipt-feed { height: 30px; } 
       }
+      
+      /* 平常在螢幕上隱藏收據 */
       #receipt-area { display: none; }
 
     </style>
@@ -169,49 +202,49 @@
       </div>
 
       <div class="products-grid">
-        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (小)', 40)">
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣-40(小)', 40)">
             <span class="product-name">洗衣-40<br>(小)</span>
             <span class="product-price">$40</span>
         </button>
-        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (小)', 70)">
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣-70(小)', 70)">
             <span class="product-name">洗衣 70-小</span>
             <span class="product-price">$70</span>
         </button>
-        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (中)', 100)">
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣-100(中)', 100)">
             <span class="product-name">洗衣 100-中</span>
             <span class="product-price">$100</span>
         </button>
-        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (大)', 130)">
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣-130(大)', 130)">
             <span class="product-name">洗衣 130-大</span>
             <span class="product-price">$130</span>
         </button>
 
-        <button class="product-btn btn-red" onclick="addToCart('烘衣', 10)">
+        <button class="product-btn btn-red" onclick="addToCart('烘衣 10元', 10)">
             <span class="product-name">烘衣 10元</span>
             <span class="product-price">$10</span>
         </button>
-        <button class="product-btn btn-red" onclick="addToCart('烘衣', 20)">
+        <button class="product-btn btn-red" onclick="addToCart('烘衣 20元', 20)">
             <span class="product-name">烘衣 20元</span>
             <span class="product-price">$20</span>
         </button>
-        <button class="product-btn btn-red" onclick="addToCart('烘衣', 40)">
+        <button class="product-btn btn-red" onclick="addToCart('烘衣 40元', 40)">
             <span class="product-name">烘衣 40元</span>
             <span class="product-price">$40</span>
         </button>
-        <button class="product-btn btn-red" onclick="addToCart('烘衣', 60)">
+        <button class="product-btn btn-red" onclick="addToCart('烘衣 60元', 60)">
             <span class="product-name">烘衣 60元</span>
             <span class="product-price">$60</span>
         </button>
 
-        <button class="product-btn btn-red" onclick="addToCart('烘衣', 80)">
+        <button class="product-btn btn-red" onclick="addToCart('烘衣 80元', 80)">
             <span class="product-name">烘衣 80元</span>
             <span class="product-price">$80</span>
         </button>
-        <button class="product-btn btn-red" onclick="addToCart('烘衣', 100)">
+        <button class="product-btn btn-red" onclick="addToCart('烘衣 100元', 100)">
             <span class="product-name">烘衣 100元</span>
             <span class="product-price">$100</span>
         </button>
-        <button class="product-btn btn-red" onclick="addToCart('烘衣', 120)">
+        <button class="product-btn btn-red" onclick="addToCart('烘衣 120元', 120)">
             <span class="product-name">烘衣 120元</span>
             <span class="product-price">$120</span>
         </button>
@@ -253,23 +286,38 @@
     </div>
 
     <div id="receipt-area">
-      <div style="text-align: center; font-family: monospace; font-size: 14px;">
-        <h2>eStar 衣洗淨</h2>
-        <p>================================</p>
-        <p style="text-align:left;">時間: <span id="printTime"></span></p>
-        <p style="text-align:left;">客戶: <span id="printCustomer"></span></p>
-        <p>--------------------------------</p>
-        <div id="printItems" style="text-align:left; line-height: 1.5;"></div>
-        <p>--------------------------------</p>
-        <h2 style="text-align:right;">總計: $<span id="printTotal"></span></h2>
-        <br>
-        <p>謝謝光臨！</p>
+      <div class="receipt-header">
+        <h2 class="receipt-title">eStar 衣洗淨</h2>
+        <div>訂單收據</div>
       </div>
+
+      <div class="receipt-divider"></div>
+      
+      <div>時間: <span id="printTime"></span></div>
+      <div>客戶: <span id="printCustomer"></span></div>
+      
+      <div class="receipt-divider"></div>
+
+      <div id="printItems">
+         </div>
+
+      <div class="receipt-divider"></div>
+
+      <div class="receipt-total">
+        總計: $<span id="printTotal"></span>
+      </div>
+      
+      <div class="receipt-footer">
+        <p>謝謝光臨！</p>
+        <p style="font-size:10px; color:#666;">powered by eStarCRM</p>
+      </div>
+
+      <br><br><br>
+      <div class="receipt-feed">.</div>
     </div>
 
     <script>
       // ==========================================
-      // 確保 config.js 有被正確載入
       if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
           alert("錯誤：找不到設定檔 config.js！");
       }
@@ -278,7 +326,6 @@
       let currentCustomer = null;
       let cart = [];
 
-      // API 呼叫
       function callApi(action, data = {}) {
         return fetch(GAS_API_URL, {
             method: "POST",
@@ -291,7 +338,6 @@
         })
         .catch(err => {
             console.error(err);
-            // alert("連線錯誤：" + err.message); // 暫時關閉 alert 避免干擾
         });
       }
 
@@ -387,7 +433,11 @@
         let total = 0;
         cart.forEach(item => {
           total += item.price;
-          itemsHtml += `<div style="display:flex; justify-content:space-between;"><span>${item.name}</span><span>$${item.price}</span></div>`;
+          itemsHtml += `
+            <div class="receipt-item">
+                <span>${item.name}</span>
+                <span>$${item.price}</span>
+            </div>`;
         });
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
