@@ -7,6 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
+    <script src="config.js"></script>
+
     <style>
       /* --- 全局設定 --- */
       body {
@@ -178,9 +180,14 @@
 
     <script>
       // ==========================================
-      // ⚠️ 請填入您的 Apps Script 網址 (與剛剛測試成功的一樣)
+      // ✅ 修改 2：從 config.js 讀取網址
       // ==========================================
-      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzEeAp8jubDbTaz8OJTLOvDd5NkgvXPQXUVURwklxzZ0Lzd2PrDSqWouIejcDifev9f/exec"; 
+      // 確保 config.js 有被正確載入
+      if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
+          alert("錯誤：找不到設定檔 config.js 或 API_URL 未設定！");
+      }
+      
+      const GAS_API_URL = CONFIG.API_URL; 
 
       // === 變數 ===
       let currentCustomer = null;
@@ -312,9 +319,6 @@
 
         // 2. 執行列印 (瀏覽器會跳出視窗)
         window.print();
-
-        // 3. (未來擴充) 這裡可以呼叫 API 把訂單存回 Google Sheet
-        // saveOrderToGoogleSheet(cart, currentCustomer);
       }
 
       // 初始化
