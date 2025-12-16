@@ -13,89 +13,126 @@
       /* --- 全局設定 --- */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background-color: #f2f2f7;
+        background-color: #333; /* 背景改深色，對比更強 */
         margin: 0; padding: 0;
         height: 100vh; display: flex; overflow: hidden;
       }
 
-      /* --- 左側：今日客戶列表 --- */
+      /* --- 左側：今日客戶列表 (保持原樣，稍微優化配色) --- */
       .sidebar {
-        width: 300px; background-color: #ffffff; border-right: 1px solid #d1d1d6;
+        width: 280px; 
+        background-color: #f5f5f7; 
+        border-right: 1px solid #d1d1d6;
         display: flex; flex-direction: column; height: 100%;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        z-index: 10;
       }
       .sidebar-header {
-        padding: 15px; background-color: #eee; font-weight: bold;
+        padding: 15px; background-color: #fff; font-weight: bold; border-bottom: 1px solid #ddd;
         display: flex; justify-content: space-between; align-items: center;
       }
       .refresh-btn {
-        background: white; border: 1px solid #ccc; border-radius: 4px;
-        padding: 5px 10px; cursor: pointer; font-size: 14px;
+        background: white; border: 1px solid #007aff; color: #007aff; border-radius: 4px;
+        padding: 4px 10px; cursor: pointer; font-size: 13px;
       }
       .customer-list { overflow-y: auto; flex: 1; }
       .customer-item {
-        padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
-        transition: background 0.2s;
+        padding: 15px; border-bottom: 1px solid #e0e0e0; cursor: pointer;
+        transition: background 0.1s; background: #fff;
       }
       .customer-item:active { background-color: #e5e5ea; }
       .customer-item.selected { background-color: #007aff; color: white; }
-      .customer-item.selected .customer-time { color: #ddd; }
+      .customer-item.selected .customer-time { color: #cce4ff; }
       .customer-phone { font-weight: bold; font-size: 1.1em; }
       .customer-time { font-size: 0.85em; color: #666; margin-top: 4px; }
       .loading-text { text-align: center; color: #999; padding: 20px; }
 
       /* --- 右側：操作區 --- */
       .main-content {
-        flex: 1; display: flex; flex-direction: column; padding: 10px;
+        flex: 1; display: flex; flex-direction: column; 
+        padding: 8px; /* 縮小邊距 */
+        background-color: #222; /* 模擬舊 APP 深色背景 */
         height: 100%; box-sizing: border-box;
       }
 
-      /* 客戶資訊卡 */
-      .current-customer-card {
-        background: white; padding: 10px 15px; border-radius: 10px;
-        margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      /* 客戶資訊條 */
+      .current-customer-bar {
+        background: #444; color: white; padding: 8px 15px; border-radius: 6px;
+        margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
       }
-      .customer-info-text { font-size: 1.2em; color: #333; font-weight: bold;}
+      .customer-info-text { font-size: 1.1em; font-weight: bold; color: #fff;}
 
-      /* 商品按鈕區 (Grid) */
+      /* --- 商品按鈕區 (Grid 核心修改) --- */
       .products-grid {
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-        flex: 1; overflow-y: auto; margin-bottom: 10px;
+        display: grid; 
+        grid-template-columns: repeat(4, 1fr); /* 改為 4 欄 */
+        grid-auto-rows: 100px; /* 固定高度，讓按鈕整齊 */
+        gap: 6px; /* 按鈕間距 */
+        flex: 1; overflow-y: auto; margin-bottom: 8px;
+        align-content: start;
       }
-      .product-btn {
-        border: none; border-radius: 12px; padding: 10px;
-        font-size: 18px; font-weight: bold; color: white;
-        cursor: pointer; display: flex; flex-direction: column;
-        justify-content: center; align-items: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.1s;
-      }
-      .product-btn:active { transform: scale(0.96); }
-      .product-btn span { font-size: 0.8em; font-weight: normal; margin-top: 5px; opacity: 0.9; }
-      
-      .btn-wash { background-color: #007aff; } /* 藍 */
-      .btn-dry { background-color: #ff9500; }  /* 橘 */
-      .btn-item { background-color: #34c759; } /* 綠 */
 
-      /* 結帳區 */
+      .product-btn {
+        border: none; border-radius: 6px; /* 圓角稍微小一點，像舊APP */
+        padding: 5px;
+        position: relative; /* 為了絕對定位價格 */
+        cursor: pointer; 
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        transition: transform 0.05s, opacity 0.1s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      .product-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+      /* 按鈕內的文字樣式 */
+      .product-name {
+        font-size: 18px; font-weight: bold; color: white;
+        text-align: center; line-height: 1.2;
+        margin-bottom: 15px; /* 留位置給價格 */
+      }
+      .product-price {
+        position: absolute;
+        bottom: 5px; right: 8px;
+        font-size: 16px; font-weight: bold; color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      }
+
+      /* --- 顏色類別 (完全仿照舊APP) --- */
+      .btn-blue   { background-color: #0288d1; } /* 洗衣 */
+      .btn-red    { background-color: #d32f2f; } /* 烘衣 */
+      .btn-purple { background-color: #7b1fa2; } /* 商品 */
+      .btn-green  { background-color: #388e3c; } /* 服務 */
+
+      /* 結帳與購物車區 (置底) */
       .checkout-section {
-        background: white; border-radius: 12px; padding: 15px;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        background: #333; border-top: 1px solid #555;
+        padding-top: 5px;
       }
+      /* 讓購物車清單稍微縮小，不要佔據太多按鈕空間 */
       .order-summary {
-        margin-bottom: 10px; max-height: 100px; overflow-y: auto;
-        font-size: 0.9em; color: #555; border-bottom: 1px dashed #ccc; padding-bottom: 5px;
+        background: #fff; border-radius: 6px;
+        margin-bottom: 5px; max-height: 80px; overflow-y: auto;
+        padding: 5px; font-size: 0.9em;
       }
-      .order-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
-      .total-area {
-        display: flex; justify-content: space-between; align-items: center;
-        font-size: 1.5em; font-weight: bold; margin-bottom: 10px;
+      .order-item { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 2px 0; }
+      
+      .checkout-bar {
+        display: flex; gap: 10px;
+      }
+      .total-display {
+        flex: 1; background: #000; color: #00e676; 
+        font-size: 24px; font-weight: bold; display: flex; align-items: center; justify-content: flex-end; padding: 0 15px;
+        border-radius: 6px; font-family: monospace;
       }
       .print-btn {
-        width: 100%; background-color: #1c1c1e; color: white;
-        border: none; padding: 15px; font-size: 20px; border-radius: 10px; cursor: pointer;
+        width: 120px; background-color: #fff; color: #000;
+        border: none; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer;
+      }
+      .print-btn:active { background-color: #ddd; }
+      .clear-btn {
+         background-color: #ff3b30; color: white; border: none; border-radius: 6px; width: 60px; font-weight: bold;
       }
 
-      /* --- 列印專用樣式 --- */
+      /* --- 列印隱藏區 --- */
       @media print {
         body * { visibility: hidden; }
         #receipt-area, #receipt-area * { visibility: visible; }
@@ -103,10 +140,9 @@
           position: absolute; left: 0; top: 0; width: 100%;
           color: black; background: white; padding: 10px;
         }
-        /* 隱藏不想印出的東西 */
         .sidebar, .main-content { display: none; }
       }
-      #receipt-area { display: none; } /* 平常隱藏 */
+      #receipt-area { display: none; }
 
     </style>
 </head>
@@ -114,7 +150,7 @@
 
     <div class="sidebar">
       <div class="sidebar-header">
-        今日 KIOSK 客戶
+        KIOSK 客戶
         <button class="refresh-btn" onclick="loadTodayCustomers()">刷新</button>
       </div>
       <div class="customer-list" id="customerList">
@@ -124,76 +160,125 @@
 
     <div class="main-content">
       
-      <div class="current-customer-card">
+      <div class="current-customer-bar">
         <div>
-          <span style="color:#888; font-size:0.9em;">當前客戶：</span>
-          <span class="customer-info-text" id="currentCustomerDisplay">尚未選擇 (現場客)</span>
+          <span style="color:#aaa; font-size:0.8em;">當前：</span>
+          <span id="currentCustomerDisplay">現場客</span>
         </div>
-        <button onclick="clearOrder()" style="background:#efeff4; border:none; padding:8px 12px; border-radius:6px; color:#ff3b30; font-weight:bold;">重置</button>
+        <button class="clear-btn" onclick="clearOrder()">清空</button>
       </div>
 
       <div class="products-grid">
-        <button class="product-btn btn-wash" onclick="addToCart('洗衣 (小)', 70)">洗衣 (小) <span>$70</span></button>
-        <button class="product-btn btn-wash" onclick="addToCart('洗衣 (中)', 100)">洗衣 (中) <span>$100</span></button>
-        <button class="product-btn btn-wash" onclick="addToCart('洗衣 (大)', 130)">洗衣 (大) <span>$130</span></button>
-        
-        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (10分)', 10)">烘衣 <span>$10</span></button>
-        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (標準)', 80)">烘衣 <span>$80</span></button>
-        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (加時)', 100)">烘衣 <span>$100</span></button>
-        <button class="product-btn btn-dry" onclick="addToCart('烘衣 (特長)', 140)">烘衣 <span>$140</span></button>
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (小)', 40)">
+            <span class="product-name">洗衣-40<br>(小)</span>
+            <span class="product-price">$40</span>
+        </button>
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (小)', 70)">
+            <span class="product-name">洗衣 70-小</span>
+            <span class="product-price">$70</span>
+        </button>
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (中)', 100)">
+            <span class="product-name">洗衣 100-中</span>
+            <span class="product-price">$100</span>
+        </button>
+        <button class="product-btn btn-blue" onclick="addToCart('洗衣 (大)', 130)">
+            <span class="product-name">洗衣 130-大</span>
+            <span class="product-price">$130</span>
+        </button>
 
-        <button class="product-btn btn-item" onclick="addToCart('靜電香紙', 10)">靜電香紙 <span>$10</span></button>
-        <button class="product-btn btn-item" onclick="addToCart('裝衣袋', 10)">裝衣袋 <span>$10</span></button>
-        <button class="product-btn btn-item" onclick="addToCart('洗衣球', 30)">洗衣球 <span>$30</span></button>
+        <button class="product-btn btn-red" onclick="addToCart('烘衣', 10)">
+            <span class="product-name">烘衣 10元</span>
+            <span class="product-price">$10</span>
+        </button>
+        <button class="product-btn btn-red" onclick="addToCart('烘衣', 20)">
+            <span class="product-name">烘衣 20元</span>
+            <span class="product-price">$20</span>
+        </button>
+        <button class="product-btn btn-red" onclick="addToCart('烘衣', 40)">
+            <span class="product-name">烘衣 40元</span>
+            <span class="product-price">$40</span>
+        </button>
+        <button class="product-btn btn-red" onclick="addToCart('烘衣', 60)">
+            <span class="product-name">烘衣 60元</span>
+            <span class="product-price">$60</span>
+        </button>
+
+        <button class="product-btn btn-red" onclick="addToCart('烘衣', 80)">
+            <span class="product-name">烘衣 80元</span>
+            <span class="product-price">$80</span>
+        </button>
+        <button class="product-btn btn-red" onclick="addToCart('烘衣', 100)">
+            <span class="product-name">烘衣 100元</span>
+            <span class="product-price">$100</span>
+        </button>
+        <button class="product-btn btn-red" onclick="addToCart('烘衣', 120)">
+            <span class="product-name">烘衣 120元</span>
+            <span class="product-price">$120</span>
+        </button>
+        <button class="product-btn btn-purple" onclick="addToCart('裝衣袋', 10)">
+            <span class="product-name">裝衣袋 10</span>
+            <span class="product-price">$10</span>
+        </button>
+
+        <button class="product-btn btn-purple" onclick="addToCart('加洗劑', 10)">
+            <span class="product-name">加洗劑 10</span>
+            <span class="product-price">$10</span>
+        </button>
+        <button class="product-btn btn-purple" onclick="addToCart('靜電香紙', 10)">
+            <span class="product-name">靜電香紙 10</span>
+            <span class="product-price">$10</span>
+        </button>
+        <button class="product-btn btn-purple" onclick="addToCart('洗衣豆', 30)">
+            <span class="product-name">洗衣豆 30</span>
+            <span class="product-price">$30</span>
+        </button>
+        <button class="product-btn btn-green" onclick="addToCart('代摺費用', 20)">
+            <span class="product-name">代摺費用</span>
+            <span class="product-price">$20</span>
+        </button>
       </div>
 
       <div class="checkout-section">
         <div class="order-summary" id="orderSummary">
-          <div style="text-align:center; color:#999; padding:10px;">點擊上方按鈕加入項目</div>
+          <div style="text-align:center; color:#999;">購物車是空的</div>
         </div>
         
-        <div class="total-area">
-          <span>總金額</span>
-          <span style="color:#007aff;">$ <span id="totalPrice">0</span></span>
+        <div class="checkout-bar">
+            <div class="total-display">
+                $<span id="totalPrice" style="margin-left:5px;">0</span>
+            </div>
+            <button class="print-btn" onclick="printReceipt()">確認列印</button>
         </div>
-        
-        <button class="print-btn" onclick="printReceipt()">確認並列印單據</button>
       </div>
     </div>
 
     <div id="receipt-area">
       <div style="text-align: center; font-family: monospace; font-size: 14px;">
-        <h2>洗衣店收執聯</h2>
+        <h2>eStar 衣洗淨</h2>
         <p>================================</p>
         <p style="text-align:left;">時間: <span id="printTime"></span></p>
         <p style="text-align:left;">客戶: <span id="printCustomer"></span></p>
         <p>--------------------------------</p>
-        <div id="printItems" style="text-align:left; line-height: 1.5;">
-          </div>
+        <div id="printItems" style="text-align:left; line-height: 1.5;"></div>
         <p>--------------------------------</p>
         <h2 style="text-align:right;">總計: $<span id="printTotal"></span></h2>
         <br>
         <p>謝謝光臨！</p>
-        <p style="font-size: 10px;">powered by eStarCRM</p>
       </div>
     </div>
 
     <script>
       // ==========================================
-      // ✅ 修改 2：從 config.js 讀取網址
-      // ==========================================
       // 確保 config.js 有被正確載入
       if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
-          alert("錯誤：找不到設定檔 config.js 或 API_URL 未設定！");
+          alert("錯誤：找不到設定檔 config.js！");
       }
-      
       const GAS_API_URL = CONFIG.API_URL; 
 
-      // === 變數 ===
       let currentCustomer = null;
       let cart = [];
 
-      // === API 核心 ===
+      // API 呼叫
       function callApi(action, data = {}) {
         return fetch(GAS_API_URL, {
             method: "POST",
@@ -206,14 +291,13 @@
         })
         .catch(err => {
             console.error(err);
-            alert("連線發生錯誤：" + err.message);
+            // alert("連線錯誤：" + err.message); // 暫時關閉 alert 避免干擾
         });
       }
 
-      // === 功能 1: 載入今日客戶 (自動執行) ===
       function loadTodayCustomers() {
         const listEl = document.getElementById('customerList');
-        listEl.innerHTML = '<div class="loading-text">更新資料中...</div>';
+        listEl.innerHTML = '<div class="loading-text">載入中...</div>';
         
         callApi('getTodayRawData')
           .then(data => {
@@ -222,7 +306,6 @@
                listEl.innerHTML = '<div class="loading-text">今日尚無 KIOSK 資料</div>';
                return;
              }
-
              data.forEach(cust => {
                const div = document.createElement('div');
                div.className = 'customer-item';
@@ -230,24 +313,19 @@
                  <div class="customer-phone">${cust.phone}</div>
                  <div class="customer-time">${cust.time} - ${cust.name || '未填寫'}</div>
                `;
-               // 點擊事件
                div.onclick = () => selectCustomer(cust, div);
                listEl.appendChild(div);
              });
           });
       }
 
-      // === 功能 2: 選擇客戶 ===
       function selectCustomer(cust, element) {
         currentCustomer = cust;
         document.getElementById('currentCustomerDisplay').innerText = `${cust.name || '未填寫'} (${cust.phone})`;
-        
-        // UI 變色
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
         if(element) element.classList.add('selected');
       }
 
-      // === 功能 3: 購物車邏輯 ===
       function addToCart(name, price) {
         cart.push({ name, price });
         renderCart();
@@ -263,7 +341,7 @@
         const totalEl = document.getElementById('totalPrice');
         
         if (cart.length === 0) {
-          container.innerHTML = '<div style="text-align:center; color:#999; padding:10px;">購物車是空的</div>';
+          container.innerHTML = '<div style="text-align:center; color:#999;">購物車是空的</div>';
           totalEl.innerText = '0';
           return;
         }
@@ -286,19 +364,16 @@
       function clearOrder() {
         cart = [];
         currentCustomer = null;
-        document.getElementById('currentCustomerDisplay').innerText = "尚未選擇 (現場客)";
+        document.getElementById('currentCustomerDisplay').innerText = "現場客";
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
         renderCart();
       }
 
-      // === 功能 4: 列印與結帳 ===
       function printReceipt() {
         if (cart.length === 0) {
-          alert("購物車是空的，無法結帳！");
+          alert("購物車是空的！");
           return;
         }
-
-        // 1. 填寫收據內容
         const now = new Date();
         document.getElementById('printTime').innerText = now.toLocaleString('zh-TW', {hour12:false});
         
@@ -317,13 +392,10 @@
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
 
-        // 2. 執行列印 (瀏覽器會跳出視窗)
         window.print();
       }
 
-      // 初始化
       window.onload = loadTodayCustomers;
-
     </script>
 </body>
 </html>
