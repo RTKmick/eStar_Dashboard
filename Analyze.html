@@ -201,13 +201,14 @@
         </div>
 
     </div>
-
+    
+    <script src="config.js"></script>
+    
     <script type="text/javascript">
-        // ===============================================================
-        // ⚠️⚠️⚠️ 設定區：請填入您的 Apps Script 網址 ⚠️⚠️⚠️
-        // ===============================================================
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzMWJFh5d5MdliqFeahrppP8-KtLcFIBFAsIygw27a14lNuGqgCzi91XwgY5UpBg9v4/exec"; 
 
+    // ✅ 新寫法 (直接讀取設定檔)
+    const GAS_API_URL = CONFIG.API_URL;
+        
         // --- GitHub 專用：API 呼叫核心 ---
         function callApi(action, data = {}) {
             return fetch(GAS_API_URL, {
