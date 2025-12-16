@@ -18,13 +18,14 @@
         height: 100vh; display: flex; overflow: hidden;
       }
 
-      /* --- 左側：今日客戶列表 --- */
+      /* ========================================= */
+      /* ✅ 左欄：今日客戶列表 (固定寬度 260px)    */
+      /* ========================================= */
       .sidebar {
-        width: 280px; 
+        width: 260px; 
         background-color: #f5f5f7; 
         border-right: 1px solid #d1d1d6;
         display: flex; flex-direction: column; height: 100%;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         z-index: 10;
       }
       .sidebar-header {
@@ -40,141 +41,124 @@
         padding: 15px; border-bottom: 1px solid #e0e0e0; cursor: pointer;
         transition: background 0.1s; background: #fff;
       }
-      .customer-item:active { background-color: #e5e5ea; }
       .customer-item.selected { background-color: #007aff; color: white; }
       .customer-item.selected .customer-time { color: #cce4ff; }
       .customer-phone { font-weight: bold; font-size: 1.1em; }
       .customer-time { font-size: 0.85em; color: #666; margin-top: 4px; }
       .loading-text { text-align: center; color: #999; padding: 20px; }
 
-      /* --- 右側：操作區 --- */
-      .main-content {
-        flex: 1; display: flex; flex-direction: column; 
+      /* ========================================= */
+      /* ✅ 中欄：商品按鈕區 (彈性寬度，佔據剩餘空間) */
+      /* ========================================= */
+      .middle-content {
+        flex: 1; /* 自動填滿中間 */
+        display: flex; flex-direction: column; 
         padding: 8px;
         background-color: #222;
         height: 100%; box-sizing: border-box;
+        border-right: 1px solid #444;
       }
 
       /* 客戶資訊條 */
       .current-customer-bar {
-        background: #444; color: white; padding: 8px 15px; border-radius: 6px;
-        margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+        background: #444; color: white; padding: 10px 15px; border-radius: 6px;
+        margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
       }
-      .customer-info-text { font-size: 1.1em; font-weight: bold; color: #fff;}
-
-      /* --- 商品按鈕 Grid (4欄) --- */
+      
+      /* 商品 Grid (保持 4 欄) */
       .products-grid {
         display: grid; 
         grid-template-columns: repeat(4, 1fr);
         grid-auto-rows: 100px;
-        gap: 6px;
-        flex: 1; overflow-y: auto; margin-bottom: 8px;
+        gap: 8px;
+        overflow-y: auto;
         align-content: start;
+        padding-bottom: 20px;
       }
 
       .product-btn {
         border: none; border-radius: 6px;
-        padding: 5px;
-        position: relative;
-        cursor: pointer; 
+        padding: 5px; position: relative; cursor: pointer; 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        transition: transform 0.05s, opacity 0.1s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       }
       .product-btn:active { transform: scale(0.96); opacity: 0.9; }
 
-      .product-name {
-        font-size: 18px; font-weight: bold; color: white;
-        text-align: center; line-height: 1.2;
-        margin-bottom: 15px;
-      }
-      .product-price {
-        position: absolute;
-        bottom: 5px; right: 8px;
-        font-size: 16px; font-weight: bold; color: white;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
+      .product-name { font-size: 18px; font-weight: bold; color: white; text-align: center; line-height: 1.2; margin-bottom: 15px; }
+      .product-price { position: absolute; bottom: 5px; right: 8px; font-size: 16px; font-weight: bold; color: white; }
 
-      /* 顏色定義 */
       .btn-blue   { background-color: #0288d1; }
       .btn-red    { background-color: #d32f2f; }
       .btn-purple { background-color: #7b1fa2; }
       .btn-green  { background-color: #388e3c; }
 
-      /* 結帳與購物車區 */
-      .checkout-section {
-        background: #333; border-top: 1px solid #555;
-        padding-top: 5px;
+      /* ========================================= */
+      /* ✅ 右欄：收據預覽區 (固定寬度 320px)      */
+      /* ========================================= */
+      .right-panel {
+        width: 320px;
+        background-color: #fff; /* 白底，像紙張 */
+        display: flex; flex-direction: column;
+        height: 100%;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.2);
       }
-      .order-summary {
-        background: #fff; border-radius: 6px;
-        margin-bottom: 5px; max-height: 80px; overflow-y: auto;
-        padding: 5px; font-size: 0.9em;
+
+      .receipt-preview-header {
+        background: #f9f9f9; padding: 15px; border-bottom: 1px solid #ddd;
+        text-align: center; font-weight: bold; font-size: 1.1em;
       }
-      .order-item { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 2px 0; }
       
-      .checkout-bar {
-        display: flex; gap: 10px;
+      /* 這裡是用來顯示即時購物車明細的區域 */
+      .cart-list {
+        flex: 1; overflow-y: auto; padding: 10px;
+        font-family: 'Courier New', monospace; /* 模擬收據字體 */
       }
-      .total-display {
-        flex: 1; background: #000; color: #00e676; 
-        font-size: 24px; font-weight: bold; display: flex; align-items: center; justify-content: flex-end; padding: 0 15px;
-        border-radius: 6px; font-family: monospace;
+      
+      .cart-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 14px;
+      }
+      .cart-item-name { flex: 1; }
+      .cart-item-price { font-weight: bold; margin-right: 10px; }
+      .btn-remove { 
+        color: #ff3b30; cursor: pointer; font-size: 18px; padding: 0 5px; text-decoration: none;
+      }
+
+      /* 右下角結帳區 */
+      .checkout-footer {
+        padding: 15px; background: #f0f0f5; border-top: 1px solid #ddd;
+      }
+      .total-row {
+        display: flex; justify-content: space-between; font-size: 1.5em; font-weight: bold; margin-bottom: 15px;
       }
       .print-btn {
-        width: 120px; background-color: #fff; color: #000;
-        border: none; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer;
+        width: 100%; background-color: #000; color: white;
+        border: none; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 8px; cursor: pointer;
       }
-      .print-btn:active { background-color: #ddd; }
-      .clear-btn {
-         background-color: #ff3b30; color: white; border: none; border-radius: 6px; width: 60px; font-weight: bold;
-      }
+      .print-btn:active { background-color: #333; }
+      .clear-btn { background-color: #ff3b30; color: white; border: none; border-radius: 4px; padding: 5px 10px; font-weight: bold; cursor: pointer;}
 
       /* ========================================= */
-      /* ✅ 列印專用樣式 (針對 TSP143 80mm 優化)  */
+      /* 🖨️ 列印樣式 (不變，保持 80mm 優化)       */
       /* ========================================= */
       @media print {
-        /* 設定紙張大小：寬度 80mm，高度自動 */
-        @page {
-            size: 80mm auto;
-            margin: 0; 
-        }
-
-        /* 隱藏網頁介面 */
+        @page { size: 80mm auto; margin: 0; }
         body * { visibility: hidden; height: 0; overflow: hidden; }
-        .sidebar, .main-content { display: none !important; }
+        .sidebar, .middle-content, .right-panel { display: none !important; }
 
-        /* 顯示收據區域 */
         #receipt-area, #receipt-area * { visibility: visible; height: auto; }
-        
         #receipt-area {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 72mm; /* 80mm 紙張實際可印區域約 72mm */
-          padding: 5px;
-          margin: 0;
-          color: black;
-          background: white;
-          font-family: 'Courier New', monospace; /* 使用等寬字體，對齊較準 */
-          font-size: 14px;
-          line-height: 1.4;
+          position: absolute; left: 0; top: 0; width: 72mm;
+          padding: 5px; margin: 0; color: black; background: white;
+          font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.4;
           display: block !important;
         }
-
-        /* 收據細節優化 */
         .receipt-header { text-align: center; margin-bottom: 10px; }
-        .receipt-title { font-size: 1.5em; font-weight: bold; margin: 0; }
         .receipt-divider { border-top: 1px dashed #000; margin: 5px 0; }
         .receipt-item { display: flex; justify-content: space-between; }
         .receipt-total { font-size: 1.5em; font-weight: bold; text-align: right; margin-top: 10px; }
-        .receipt-footer { text-align: center; margin-top: 10px; font-size: 12px; }
-        
-        /* ⚠️ 關鍵：底部預留切紙空間 (Feed) */
         .receipt-feed { height: 30px; } 
       }
-      
-      /* 平常在螢幕上隱藏收據 */
       #receipt-area { display: none; }
 
     </style>
@@ -191,8 +175,7 @@
       </div>
     </div>
 
-    <div class="main-content">
-      
+    <div class="middle-content">
       <div class="current-customer-bar">
         <div>
           <span style="color:#aaa; font-size:0.8em;">當前：</span>
@@ -203,117 +186,92 @@
 
       <div class="products-grid">
         <button class="product-btn btn-blue" onclick="addToCart('洗衣-40(小)', 40)">
-            <span class="product-name">洗衣-40<br>(小)</span>
-            <span class="product-price">$40</span>
+            <span class="product-name">洗衣-40<br>(小)</span><span class="product-price">$40</span>
         </button>
         <button class="product-btn btn-blue" onclick="addToCart('洗衣-70(小)', 70)">
-            <span class="product-name">洗衣 70-小</span>
-            <span class="product-price">$70</span>
+            <span class="product-name">洗衣 70-小</span><span class="product-price">$70</span>
         </button>
         <button class="product-btn btn-blue" onclick="addToCart('洗衣-100(中)', 100)">
-            <span class="product-name">洗衣 100-中</span>
-            <span class="product-price">$100</span>
+            <span class="product-name">洗衣 100-中</span><span class="product-price">$100</span>
         </button>
         <button class="product-btn btn-blue" onclick="addToCart('洗衣-130(大)', 130)">
-            <span class="product-name">洗衣 130-大</span>
-            <span class="product-price">$130</span>
+            <span class="product-name">洗衣 130-大</span><span class="product-price">$130</span>
         </button>
 
         <button class="product-btn btn-red" onclick="addToCart('烘衣 10元', 10)">
-            <span class="product-name">烘衣 10元</span>
-            <span class="product-price">$10</span>
+            <span class="product-name">烘衣 10元</span><span class="product-price">$10</span>
         </button>
         <button class="product-btn btn-red" onclick="addToCart('烘衣 20元', 20)">
-            <span class="product-name">烘衣 20元</span>
-            <span class="product-price">$20</span>
+            <span class="product-name">烘衣 20元</span><span class="product-price">$20</span>
         </button>
         <button class="product-btn btn-red" onclick="addToCart('烘衣 40元', 40)">
-            <span class="product-name">烘衣 40元</span>
-            <span class="product-price">$40</span>
+            <span class="product-name">烘衣 40元</span><span class="product-price">$40</span>
         </button>
         <button class="product-btn btn-red" onclick="addToCart('烘衣 60元', 60)">
-            <span class="product-name">烘衣 60元</span>
-            <span class="product-price">$60</span>
+            <span class="product-name">烘衣 60元</span><span class="product-price">$60</span>
         </button>
-
         <button class="product-btn btn-red" onclick="addToCart('烘衣 80元', 80)">
-            <span class="product-name">烘衣 80元</span>
-            <span class="product-price">$80</span>
+            <span class="product-name">烘衣 80元</span><span class="product-price">$80</span>
         </button>
         <button class="product-btn btn-red" onclick="addToCart('烘衣 100元', 100)">
-            <span class="product-name">烘衣 100元</span>
-            <span class="product-price">$100</span>
+            <span class="product-name">烘衣 100元</span><span class="product-price">$100</span>
         </button>
         <button class="product-btn btn-red" onclick="addToCart('烘衣 120元', 120)">
-            <span class="product-name">烘衣 120元</span>
-            <span class="product-price">$120</span>
-        </button>
-        <button class="product-btn btn-purple" onclick="addToCart('裝衣袋', 10)">
-            <span class="product-name">裝衣袋 10</span>
-            <span class="product-price">$10</span>
+            <span class="product-name">烘衣 120元</span><span class="product-price">$120</span>
         </button>
 
+        <button class="product-btn btn-purple" onclick="addToCart('裝衣袋', 10)">
+            <span class="product-name">裝衣袋 10</span><span class="product-price">$10</span>
+        </button>
         <button class="product-btn btn-purple" onclick="addToCart('加洗劑', 10)">
-            <span class="product-name">加洗劑 10</span>
-            <span class="product-price">$10</span>
+            <span class="product-name">加洗劑 10</span><span class="product-price">$10</span>
         </button>
         <button class="product-btn btn-purple" onclick="addToCart('靜電香紙', 10)">
-            <span class="product-name">靜電香紙 10</span>
-            <span class="product-price">$10</span>
+            <span class="product-name">靜電香紙 10</span><span class="product-price">$10</span>
         </button>
         <button class="product-btn btn-purple" onclick="addToCart('洗衣豆', 30)">
-            <span class="product-name">洗衣豆 30</span>
-            <span class="product-price">$30</span>
+            <span class="product-name">洗衣豆 30</span><span class="product-price">$30</span>
         </button>
         <button class="product-btn btn-green" onclick="addToCart('代摺費用', 20)">
-            <span class="product-name">代摺費用</span>
-            <span class="product-price">$20</span>
+            <span class="product-name">代摺費用</span><span class="product-price">$20</span>
         </button>
       </div>
+    </div>
 
-      <div class="checkout-section">
-        <div class="order-summary" id="orderSummary">
-          <div style="text-align:center; color:#999;">購物車是空的</div>
-        </div>
+    <div class="right-panel">
+        <div class="receipt-preview-header">單據預覽</div>
         
-        <div class="checkout-bar">
-            <div class="total-display">
-                $<span id="totalPrice" style="margin-left:5px;">0</span>
+        <div class="cart-list" id="cartList">
+            <div style="text-align:center; color:#999; margin-top:50px;">
+                尚未加入項目<br>請點選左側商品
             </div>
-            <button class="print-btn" onclick="printReceipt()">確認列印</button>
         </div>
-      </div>
+
+        <div class="checkout-footer">
+            <div class="total-row">
+                <span>總計</span>
+                <span style="color:#007aff;">$<span id="totalPrice">0</span></span>
+            </div>
+            <button class="print-btn" onclick="printReceipt()">確認並列印</button>
+        </div>
     </div>
 
     <div id="receipt-area">
       <div class="receipt-header">
-        <h2 class="receipt-title">eStar 衣洗淨</h2>
+        <h2 style="font-size:1.5em; font-weight:bold; margin:0;">eStar 衣洗淨</h2>
         <div>訂單收據</div>
       </div>
-
       <div class="receipt-divider"></div>
-      
       <div>時間: <span id="printTime"></span></div>
       <div>客戶: <span id="printCustomer"></span></div>
-      
       <div class="receipt-divider"></div>
-
-      <div id="printItems">
-         </div>
-
+      <div id="printItems"></div>
       <div class="receipt-divider"></div>
-
-      <div class="receipt-total">
-        總計: $<span id="printTotal"></span>
-      </div>
-      
-      <div class="receipt-footer">
+      <div class="receipt-total">總計: $<span id="printTotal"></span></div>
+      <div style="text-align:center; margin-top:10px; font-size:12px;">
         <p>謝謝光臨！</p>
-        <p style="font-size:10px; color:#666;">powered by eStarCRM</p>
       </div>
-
-      <br><br><br>
-      <div class="receipt-feed">.</div>
+      <br><br><div class="receipt-feed">.</div>
     </div>
 
     <script>
@@ -383,11 +341,11 @@
       }
 
       function renderCart() {
-        const container = document.getElementById('orderSummary');
+        const container = document.getElementById('cartList');
         const totalEl = document.getElementById('totalPrice');
         
         if (cart.length === 0) {
-          container.innerHTML = '<div style="text-align:center; color:#999;">購物車是空的</div>';
+          container.innerHTML = '<div style="text-align:center; color:#999; margin-top:50px;">尚未加入項目</div>';
           totalEl.innerText = '0';
           return;
         }
@@ -396,10 +354,12 @@
         let total = 0;
         cart.forEach((item, index) => {
           total += item.price;
+          // 右側預覽區的列表樣式
           html += `
-            <div class="order-item">
-              <span>${item.name}</span>
-              <span>$${item.price} <a href="#" onclick="removeItem(${index})" style="color:red;text-decoration:none;margin-left:5px;">✕</a></span>
+            <div class="cart-item">
+              <span class="cart-item-name">${item.name}</span>
+              <span class="cart-item-price">$${item.price}</span>
+              <a href="#" class="btn-remove" onclick="removeItem(${index})">✕</a>
             </div>
           `;
         });
@@ -420,6 +380,7 @@
           alert("購物車是空的！");
           return;
         }
+        // 準備列印資料
         const now = new Date();
         document.getElementById('printTime').innerText = now.toLocaleString('zh-TW', {hour12:false});
         
@@ -442,6 +403,7 @@
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
 
+        // 呼叫瀏覽器列印 (Star webPRNT 會攔截這個)
         window.print();
       }
 
