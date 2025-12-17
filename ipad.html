@@ -183,7 +183,7 @@
       }
       .print-btn:active { transform: scale(0.98); background-color: #333; }
 
-      /* 列印樣式 */
+      /* 列印樣式 (針對熱感應紙優化) */
       @media print {
         @page { size: 80mm auto; margin: 0; }
         body * { visibility: hidden; height: 0; overflow: hidden; }
@@ -295,53 +295,37 @@
 
     <script>
       // ==========================================
-      // 強力偵錯版 Script
-      // ==========================================
-      
-      // 1. 檢查 config.js
+      // 檢查 config.js
       if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
-          alert("❌ 嚴重錯誤：Config.js 未載入或是 URL 是空的！\n請檢查檔案是否在同一目錄，且檔名正確。");
+          alert("❌ 錯誤：Config.js 未正確載入！");
       }
       const GAS_API_URL = CONFIG.API_URL; 
 
       let currentCustomer = null;
       let cart = [];
 
-      // API 核心 (增加詳細報錯)
+      // API 核心
       function callApi(action, data = {}) {
         return fetch(GAS_API_URL, {
             method: "POST",
             body: JSON.stringify({ action: action, data: data })
         })
         .then(res => {
-            // 檢查 HTTP 狀態
-            if (!res.ok) {
-                throw new Error("HTTP 連線錯誤 (Status " + res.status + ")");
-            }
-            return res.text(); // 先讀成文字，怕 JSON 解析失敗
-        })
-        .then(text => {
-            try {
-                return JSON.parse(text); // 嘗試解析 JSON
-            } catch (e) {
-                // 如果後端回傳的不是 JSON (例如 HTML 錯誤頁面)
-                throw new Error("後端回傳格式錯誤 (非 JSON)，可能原因：\n1. GAS 程式碼報錯\n2. 網址錯誤\n\n內容片段: " + text.substring(0, 50));
-            }
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            return res.json();
         })
         .then(result => {
-            if(result.error) throw new Error("API 邏輯錯誤: " + result.error);
+            if(result.error) throw new Error(result.error);
             return result;
         });
       }
 
       function loadTodayCustomers() {
         const listEl = document.getElementById('customerList');
-        listEl.innerHTML = '<div class="loading-text">連線中 (Loading)...</div>';
+        listEl.innerHTML = '<div class="loading-text">資料載入中...</div>';
         
         callApi('getTodayRawData')
           .then(data => {
-             // alert("✅ 測試成功！收到 " + data.length + " 筆資料"); // 如果資料跑出來了，這行可以註解掉
-             
              listEl.innerHTML = '';
              if (!data || data.length === 0) {
                listEl.innerHTML = '<div class="loading-text">今日尚無 KIOSK 資料</div>';
@@ -354,19 +338,16 @@
                  <div class="customer-phone">${cust.phone}</div>
                  <div class="customer-time">${cust.time} - ${cust.name || '未填寫'}</div>
                `;
-               // ⚠️ 修正重點：之前這行寫錯了，導致點擊沒反應
                div.onclick = () => selectCustomer(cust, div); 
                listEl.appendChild(div);
              });
           })
           .catch(err => {
-             // 🔴 這裡會顯示真正的錯誤原因
-             alert("❌ 讀取失敗：\n" + err.message);
-             listEl.innerHTML = '<div class="loading-text" style="color:red">連線錯誤，請通知管理員</div>';
+             listEl.innerHTML = '<div class="loading-text" style="color:red">連線失敗，請刷新重試</div>';
+             console.error(err);
           });
       }
 
-      // 選擇客戶並顯示燈號
       function selectCustomer(cust, element) {
         currentCustomer = cust;
         document.getElementById('currentCustomerDisplay').innerText = `${cust.name || '未填寫'} (${cust.phone})`;
@@ -376,9 +357,8 @@
         const badgeContainer = document.getElementById('customerDetailBadges');
         badgeContainer.innerHTML = ''; 
 
-        // 檢查 extraInfo
         if (!cust.extraInfo || cust.extraInfo.length === 0) {
-            badgeContainer.innerHTML = '<span style="color:#666; padding:10px; font-style:italic;">無詳細資料 (D~L欄)</span>';
+            badgeContainer.innerHTML = '<span style="color:#666; padding:10px; font-style:italic;">無詳細資料</span>';
             return;
         }
 
