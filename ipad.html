@@ -121,11 +121,12 @@
         min-height: 140px; /* 固定高度區域 */
         display: flex;
         flex-direction: column;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
       }
       
       .info-panel-title {
-        font-size: 12px; color: #8e8e93; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;
+        font-size: 13px; color: #8e8e93; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px;
+        text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px;
       }
 
       .badges-container {
@@ -137,23 +138,41 @@
       .info-badge {
         display: inline-flex;
         align-items: center;
-        background: rgba(255, 255, 255, 0.05);
+        background: #3a3a3c;
         border: 1px solid #48484a;
-        padding: 6px 14px;
-        border-radius: 50px; /* 橢圓形 */
-        font-size: 14px;
+        padding: 6px 12px;
+        border-radius: 8px; /* 改為圓角矩形，更像數據標籤 */
+        font-size: 15px;
         color: #fff;
         transition: all 0.2s;
       }
       
       /* 標籤內的 標題: 內容 */
-      .badge-label { color: #aaa; margin-right: 6px; font-size: 0.9em; }
+      .badge-label { color: #aaa; margin-right: 6px; font-size: 0.85em; font-weight: normal; }
       .badge-value { font-weight: bold; color: #fff; }
 
-      /* 特殊狀態顏色 */
-      .badge-highlight { border-color: #0a84ff; background: rgba(10, 132, 255, 0.15); }
-      .badge-money { border-color: #30d158; background: rgba(48, 209, 88, 0.15); }
-      .badge-warn { border-color: #ff9f0a; background: rgba(255, 159, 10, 0.15); }
+      /* === 特殊狀態顏色 (配合 CRM 欄位) === */
+      
+      /* 會員編號 (M/F) - 亮藍色，最顯眼 */
+      .badge-id { 
+        background: rgba(10, 132, 255, 0.2); border-color: #0a84ff; color: #66b2ff; 
+        font-size: 1.1em; 
+      }
+      .badge-id .badge-value { color: #fff; text-shadow: 0 0 5px #0a84ff; }
+
+      /* 消費方式 (儲值卡) - 金黃色 */
+      .badge-vip { background: rgba(255, 214, 10, 0.15); border-color: #ffd60a; color: #ffd60a; }
+
+      /* 特別註明 (留袋/注意) - 紅色警告 */
+      .badge-alert { background: rgba(255, 69, 58, 0.2); border-color: #ff453a; color: #ff453a; }
+
+      /* 卡放店內 (是) - 橘色提醒 */
+      .badge-warn { background: rgba(255, 159, 10, 0.15); border-color: #ff9f0a; color: #ff9f0a; }
+
+      /* 不加/Default (無動作) - 變暗，不搶眼 */
+      .badge-dim { opacity: 0.5; border-color: transparent; background: #2c2c2e; }
+      .badge-dim .badge-label { color: #666; }
+      .badge-dim .badge-value { color: #888; font-weight: normal; }
 
       /* ========================================= */
       /* 3. 右欄：收據預覽                         */
@@ -363,41 +382,83 @@
           });
       }
 
-      // ✅ 修改：選擇客戶時，填充下方燈號
+      // ✅ 修改：選擇客戶時，智慧讀取 D~L 欄位並顯示
       function selectCustomer(cust, element) {
         currentCustomer = cust;
+        // 更新上方標題
         document.getElementById('currentCustomerDisplay').innerText = `${cust.name || '未填寫'} (${cust.phone})`;
+        
+        // 左側列表選取效果
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
         if(element) element.classList.add('selected');
 
-        // --- 處理下方燈號 (讀取 GAS 傳回來的 extraInfo) ---
+        // --- 處理下方燈號 (讀取 GAS 傳回來的 extraInfo D~L) ---
         const badgeContainer = document.getElementById('customerDetailBadges');
         badgeContainer.innerHTML = ''; // 先清空
 
-        // 檢查是否有 extraInfo (即 D~L 欄資料)
+        // 如果 GAS 還沒回傳 extraInfo，顯示提示
         if (!cust.extraInfo || cust.extraInfo.length === 0) {
-            badgeContainer.innerHTML = '<span style="color:#777; padding:10px;">此客戶無額外資訊 (D~L欄為空)</span>';
+            badgeContainer.innerHTML = '<span style="color:#666; padding:10px; font-style:italic;">無詳細 CRM 資料 (D~L欄)</span>';
             return;
         }
 
         let html = '';
+        
+        // 遍歷 D~L 欄位資料
         cust.extraInfo.forEach(info => {
-            // 根據標題名稱決定顏色 (這裡可以自訂邏輯)
-            let classType = 'info-badge'; // 預設灰色
+            const label = (info.label || "").toString().trim(); // 標題 (例如: 消費方式)
+            const val = (info.value || "").toString().trim();   // 內容 (例如: 儲值卡Card)
             
-            // 如果標題包含 "金"、"餘額"、"VIP"，就變亮色
-            const label = info.label.toString();
-            if (label.includes("餘額") || label.includes("金")) classType += ' badge-money'; // 綠色
-            else if (label.includes("VIP") || label.includes("等級")) classType += ' badge-highlight'; // 藍色
-            else if (label.includes("備註") || label.includes("習慣")) classType += ' badge-warn'; // 橘色
+            // 決定樣式類別 (預設為普通)
+            let cssClass = 'info-badge';
+            
+            // --- 智慧判斷邏輯 ---
 
+            // 1. 會員編號 (J欄: Number) -> 最重要！
+            // 判斷依據：標題包含 "編號" 或 "Number"，且內容不為空
+            if (label.includes("編號") || label.includes("Number")) {
+                if (val && val !== "否N" && val !== "不加Zero") {
+                    cssClass = 'info-badge badge-id'; // 亮藍色
+                } else {
+                    cssClass = 'info-badge badge-dim'; // 如果沒有編號，就變暗
+                }
+            }
+
+            // 2. 消費方式 (D欄: Type) -> 儲值卡要亮
+            else if (label.includes("消費") || label.includes("Type")) {
+                if (val.includes("儲值") || val.includes("Card")) {
+                    cssClass = 'info-badge badge-vip'; // 金色
+                }
+            }
+
+            // 3. 特別註明 (L欄: Note) -> 有寫東西就要紅字警告
+            else if (label.includes("註明") || label.includes("Note")) {
+                cssClass = 'info-badge badge-alert'; // 紅色
+            }
+
+            // 4. 卡放店內 (I欄: Card) -> "是" 就要提醒
+            else if (label.includes("卡放") || label.includes("Card")) { // 英文標題Card可能重複，中文較準
+                 if (val.includes("是") || val.includes("Y")) {
+                    cssClass = 'info-badge badge-warn'; // 橘色
+                 } else {
+                    cssClass = 'info-badge badge-dim'; // "否" 就變暗
+                 }
+            }
+
+            // 5. 降低干擾：如果是 "不加Zero"、"Default"、"否N"，則變暗
+            else if (val.includes("不加") || val.includes("Default") || val.includes("Zero")) {
+                cssClass = 'info-badge badge-dim';
+            }
+
+            // 產生 HTML
             html += `
-                <div class="${classType}">
-                    <span class="badge-label">${info.label}:</span>
-                    <span class="badge-value">${info.value}</span>
+                <div class="${cssClass}">
+                    <span class="badge-label">${label}</span>
+                    <span class="badge-value">${val}</span>
                 </div>
             `;
         });
+
         badgeContainer.innerHTML = html;
       }
 
