@@ -545,6 +545,24 @@
         window.print();
       }
 
+    function loadTodayCustomers() {
+        const listEl = document.getElementById('customerList');
+        listEl.innerHTML = '<div class="loading-text">連線中...</div>';
+        
+        // 加入這行測試：看看網址對不對
+        // alert("正在連線到: " + GAS_API_URL); 
+
+        callApi('getTodayRawData')
+          .then(data => {
+             // alert("收到資料筆數: " + (data ? data.length : 0)); // 加入這行測試
+             listEl.innerHTML = '';
+             // ... (略)
+          })
+          .catch(err => {
+             alert("連線失敗：" + err); // 顯示錯誤訊息
+          });
+    }        
+        
       window.onload = loadTodayCustomers;
     </script>
 </body>
