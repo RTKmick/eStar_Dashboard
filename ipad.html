@@ -125,23 +125,42 @@
         overflow-y: auto;
       }
 
-      /* 燈號樣式 */
+      /* 燈號樣式 (膠囊) */
       .info-badge {
         display: inline-flex; align-items: center;
-        background: #3a3a3c; border: 1px solid #48484a;
+        border: 1px solid #48484a;
         padding: 6px 12px; border-radius: 8px;
         font-size: 15px; color: #fff; transition: all 0.2s;
       }
       .badge-label { color: #aaa; margin-right: 6px; font-size: 0.85em; font-weight: normal; }
       .badge-value { font-weight: bold; color: #fff; }
 
-      /* 特殊狀態顏色 */
-      .badge-id { background: rgba(10, 132, 255, 0.2); border-color: #0a84ff; color: #66b2ff; font-size: 1.1em; }
+      /* === 特殊狀態配色 === */
+      
+      /* 預設灰階 (Dimmed) - 用於無效或預設值 */
+      .badge-dim { 
+        opacity: 0.5; 
+        border-color: #444; 
+        background: #2c2c2e; 
+      }
+      .badge-dim .badge-value { color: #999; font-weight: normal; }
+
+      /* 亮藍 (Member ID) */
+      .badge-id { 
+        background: rgba(10, 132, 255, 0.2); border-color: #0a84ff; color: #66b2ff; 
+        font-size: 1.1em; /* 放大 */
+      }
       .badge-id .badge-value { color: #fff; text-shadow: 0 0 5px #0a84ff; }
+
+      /* 金色 (VIP/儲值卡) */
       .badge-vip { background: rgba(255, 214, 10, 0.15); border-color: #ffd60a; color: #ffd60a; }
+
+      /* 紅色 (Alert/特別註明) */
       .badge-alert { background: rgba(255, 69, 58, 0.2); border-color: #ff453a; color: #ff453a; }
+
+      /* 橘色 (Warning/卡放店內) */
       .badge-warn { background: rgba(255, 159, 10, 0.15); border-color: #ff9f0a; color: #ff9f0a; }
-      .badge-dim { opacity: 0.5; border-color: transparent; background: #2c2c2e; }
+
 
       /* 右欄：結帳 */
       .right-panel {
@@ -183,7 +202,7 @@
       }
       .print-btn:active { transform: scale(0.98); background-color: #333; }
 
-      /* 列印樣式 (針對熱感應紙優化) */
+      /* 列印樣式 */
       @media print {
         @page { size: 80mm auto; margin: 0; }
         body * { visibility: hidden; height: 0; overflow: hidden; }
@@ -317,6 +336,10 @@
         .then(result => {
             if(result.error) throw new Error(result.error);
             return result;
+        })
+        .catch(err => {
+            console.error("API Error:", err);
+            alert("連線發生錯誤:\n" + err.message);
         });
       }
 
@@ -341,13 +364,10 @@
                div.onclick = () => selectCustomer(cust, div); 
                listEl.appendChild(div);
              });
-          })
-          .catch(err => {
-             listEl.innerHTML = '<div class="loading-text" style="color:red">連線失敗，請刷新重試</div>';
-             console.error(err);
           });
       }
 
+      // ✅ 智慧燈號邏輯 (Clean Text + Smart Highlights)
       function selectCustomer(cust, element) {
         currentCustomer = cust;
         document.getElementById('currentCustomerDisplay').innerText = `${cust.name || '未填寫'} (${cust.phone})`;
@@ -364,26 +384,55 @@
 
         let html = '';
         cust.extraInfo.forEach(info => {
-            const label = (info.label || "").toString().trim(); 
-            const val = (info.value || "").toString().trim();   
-            let cssClass = 'info-badge';
+            // 1. 取得原始文字
+            let rawLabel = (info.label || "").toString().trim(); 
+            let rawVal = (info.value || "").toString().trim();   
             
-            // 智慧配色邏輯
-            if (label.includes("編號") || label.includes("Number")) {
-                if (val && val !== "否N" && val !== "不加Zero") cssClass = 'info-badge badge-id';
-                else cssClass = 'info-badge badge-dim';
-            }
-            else if (label.includes("消費") || label.includes("Type")) {
-                if (val.includes("儲值") || val.includes("Card")) cssClass = 'info-badge badge-vip';
-            }
-            else if (label.includes("註明") || label.includes("Note")) cssClass = 'info-badge badge-alert';
-            else if (label.includes("卡放") || label.includes("Card")) {
-                 if (val.includes("是") || val.includes("Y")) cssClass = 'info-badge badge-warn';
-                 else cssClass = 'info-badge badge-dim';
-            }
-            else if (val.includes("不加") || val.includes("Default") || val.includes("Zero")) cssClass = 'info-badge badge-dim';
+            // 2. 清理標題 (移除英文) 例如 "消費方式 Type" -> "消費方式"
+            let label = rawLabel.replace(/[a-zA-Z\s]+/g, ''); 
+            // 如果清理完變空，就保留中文部分 (簡單防呆)
+            if(!label) label = rawLabel.split(' ')[0];
 
-            html += `<div class="${cssClass}"><span class="badge-label">${label}</span><span class="badge-value">${val}</span></div>`;
+            // 3. 清理內容 (移除特定 KIOSK 尾綴)
+            // 例如: 儲值卡Card -> 儲值卡, 中溫Default -> 中溫
+            let val = rawVal.replace(/Card/i, '')
+                            .replace(/Default/i, '')
+                            .replace(/Zero/i, '')
+                            .replace(/Y$/i, '') // 去除結尾的 Y
+                            .replace(/N$/i, ''); // 去除結尾的 N
+
+            // 4. 判斷燈號顏色
+            // 預設全部為灰階 (badge-dim)
+            let cssClass = 'info-badge badge-dim';
+            
+            // --- 點亮邏輯 ---
+            
+            // A. 會員編號: 有值就亮藍燈 (badge-id)
+            if (label.includes("編號") || label.includes("Number")) {
+                if (val && val !== "否" && val !== "不加") cssClass = 'info-badge badge-id';
+            }
+            
+            // B. 消費方式: 儲值卡就亮金燈 (badge-vip)
+            else if (label.includes("消費") || label.includes("Type")) {
+                if (val.includes("儲值")) cssClass = 'info-badge badge-vip';
+                // 否則保持灰階
+            }
+            
+            // C. 特別註明: 有字就亮紅燈 (badge-alert)
+            else if (label.includes("註明") || label.includes("Note")) {
+                if (val && val !== "無") cssClass = 'info-badge badge-alert';
+            }
+            
+            // D. 卡放店內: 是就亮橘燈 (badge-warn)
+            else if (label.includes("卡放") || label.includes("Card")) {
+                 if (val.includes("是")) cssClass = 'info-badge badge-warn';
+            }
+            
+            // E. 其他欄位 (烘衣、烘衣紙、香香豆等) 
+            // 預設已經是灰階了，這裡不需要額外處理，除非您想要特定值亮燈
+            // 例如：如果您想要「高溫」亮燈，可以在這裡加判斷
+
+            html += `<div class="${cssClass}"><span class="badge-label">${label}:</span><span class="badge-value">${val}</span></div>`;
         });
         badgeContainer.innerHTML = html;
       }
