@@ -19,9 +19,7 @@
         color: #fff;
       }
 
-      /* ========================================= */
-      /* 1. 左欄：今日客戶列表                     */
-      /* ========================================= */
+      /* 左欄：列表 */
       .sidebar {
         width: 260px; 
         background-color: #2c2c2e; 
@@ -54,25 +52,22 @@
       .customer-item.selected .customer-time { color: #e0e0e0; }
       .loading-text { text-align: center; color: #8e8e93; padding: 20px; }
 
-      /* ========================================= */
-      /* 2. 中欄：按鈕操作區 & 資訊儀表板           */
-      /* ========================================= */
+      /* 中欄：操作區 */
       .middle-content {
         flex: 1; 
         display: flex; flex-direction: column; 
         padding: 12px;
         background-color: #1c1c1e;
         height: 100%; box-sizing: border-box;
-        overflow: hidden; /* 防止整個頁面捲動 */
+        overflow: hidden; 
       }
 
-      /* 頂部資訊列 */
       .current-customer-bar {
         background: #2c2c2e; color: white; padding: 12px 15px; border-radius: 12px;
         margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         border: 1px solid #3a3a3c;
-        flex-shrink: 0; /* 防止被壓縮 */
+        flex-shrink: 0; 
       }
       .customer-info-area { display: flex; align-items: center; gap: 10px; }
       .action-buttons { display: flex; gap: 8px; }
@@ -84,19 +79,18 @@
       .btn-manual { background-color: #ff9f0a; color: white; }
       .btn-clear { background-color: #ff453a; color: white; }
 
-      /* 商品 Grid (佔用中間大部分空間) */
+      /* 按鈕 Grid */
       .products-grid {
         display: grid; 
         grid-template-columns: repeat(4, 1fr);
-        grid-auto-rows: 90px; /* 稍微調小高度，留空間給下方 */
+        grid-auto-rows: 90px; 
         gap: 8px;
         overflow-y: auto;
         align-content: start;
         margin-bottom: 10px;
-        flex-grow: 1; /* 讓它佔據剩餘空間，但至少要能顯示按鈕 */
+        flex-grow: 1; 
       }
 
-      /* 按鈕樣式 */
       .product-btn {
         border: none; border-radius: 12px; padding: 8px; position: relative; cursor: pointer; 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -112,71 +106,44 @@
       .grad-purple { background: linear-gradient(145deg, #bf5af2, #8930b8); }
       .grad-green { background: linear-gradient(145deg, #32d74b, #248a32); }
 
-      /* === ✅ 新增：下方資訊儀表板 (橢圓燈號區) === */
+      /* 下方儀表板 */
       .info-panel {
         background-color: #2c2c2e;
         border-top: 1px solid #3a3a3c;
         border-radius: 12px;
         padding: 12px;
-        min-height: 140px; /* 固定高度區域 */
+        min-height: 140px; 
         display: flex;
         flex-direction: column;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
       }
-      
       .info-panel-title {
-        font-size: 13px; color: #8e8e93; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px;
-        text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px;
+        font-size: 12px; color: #8e8e93; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;
       }
-
       .badges-container {
         display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
         overflow-y: auto;
       }
 
-      /* 膠囊標籤 (Chip) 樣式 */
+      /* 燈號樣式 */
       .info-badge {
-        display: inline-flex;
-        align-items: center;
-        background: #3a3a3c;
-        border: 1px solid #48484a;
-        padding: 6px 12px;
-        border-radius: 8px; /* 改為圓角矩形，更像數據標籤 */
-        font-size: 15px;
-        color: #fff;
-        transition: all 0.2s;
+        display: inline-flex; align-items: center;
+        background: #3a3a3c; border: 1px solid #48484a;
+        padding: 6px 12px; border-radius: 8px;
+        font-size: 15px; color: #fff; transition: all 0.2s;
       }
-      
-      /* 標籤內的 標題: 內容 */
       .badge-label { color: #aaa; margin-right: 6px; font-size: 0.85em; font-weight: normal; }
       .badge-value { font-weight: bold; color: #fff; }
 
-      /* === 特殊狀態顏色 (配合 CRM 欄位) === */
-      
-      /* 會員編號 (M/F) - 亮藍色，最顯眼 */
-      .badge-id { 
-        background: rgba(10, 132, 255, 0.2); border-color: #0a84ff; color: #66b2ff; 
-        font-size: 1.1em; 
-      }
+      /* 特殊狀態顏色 */
+      .badge-id { background: rgba(10, 132, 255, 0.2); border-color: #0a84ff; color: #66b2ff; font-size: 1.1em; }
       .badge-id .badge-value { color: #fff; text-shadow: 0 0 5px #0a84ff; }
-
-      /* 消費方式 (儲值卡) - 金黃色 */
       .badge-vip { background: rgba(255, 214, 10, 0.15); border-color: #ffd60a; color: #ffd60a; }
-
-      /* 特別註明 (留袋/注意) - 紅色警告 */
       .badge-alert { background: rgba(255, 69, 58, 0.2); border-color: #ff453a; color: #ff453a; }
-
-      /* 卡放店內 (是) - 橘色提醒 */
       .badge-warn { background: rgba(255, 159, 10, 0.15); border-color: #ff9f0a; color: #ff9f0a; }
-
-      /* 不加/Default (無動作) - 變暗，不搶眼 */
       .badge-dim { opacity: 0.5; border-color: transparent; background: #2c2c2e; }
-      .badge-dim .badge-label { color: #666; }
-      .badge-dim .badge-value { color: #888; font-weight: normal; }
 
-      /* ========================================= */
-      /* 3. 右欄：收據預覽                         */
-      /* ========================================= */
+      /* 右欄：結帳 */
       .right-panel {
         width: 320px;
         background-color: #f2f2f7; 
@@ -184,19 +151,16 @@
         height: 100%;
         border-left: 1px solid #3a3a3c;
       }
-
       .receipt-preview-header {
         background: #fff; padding: 15px; border-bottom: 1px solid #d1d1d6;
         text-align: center; font-weight: bold; font-size: 1.1em; color: #000;
       }
-      
       .cart-list {
         flex: 1; overflow-y: auto; padding: 10px;
         font-family: 'Courier New', monospace; 
         background: #fff; margin: 10px; border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
       }
-      
       .cart-item {
         display: flex; justify-content: space-between; align-items: center;
         padding: 10px 0; border-bottom: 1px dashed #ccc; font-size: 15px; color: #333;
@@ -206,7 +170,6 @@
       .btn-remove { 
         color: #ff3b30; cursor: pointer; font-size: 18px; padding: 0 8px; text-decoration: none;
       }
-
       .checkout-footer {
         padding: 20px; background: #fff; border-top: 1px solid #d1d1d6;
       }
@@ -220,14 +183,11 @@
       }
       .print-btn:active { transform: scale(0.98); background-color: #333; }
 
-      /* ========================================= */
-      /* 🖨️ 列印樣式 (80mm)                        */
-      /* ========================================= */
+      /* 列印樣式 */
       @media print {
         @page { size: 80mm auto; margin: 0; }
         body * { visibility: hidden; height: 0; overflow: hidden; }
         .sidebar, .middle-content, .right-panel { display: none !important; }
-
         #receipt-area, #receipt-area * { visibility: visible; height: auto; }
         #receipt-area {
           position: absolute; left: 0; top: 0; width: 72mm;
@@ -242,7 +202,6 @@
         .receipt-feed { height: 30px; } 
       }
       #receipt-area { display: none; }
-
     </style>
 </head>
 <body>
@@ -295,7 +254,7 @@
       </div>
 
       <div class="info-panel">
-        <div class="info-panel-title">客戶詳細資訊 (GAS 欄位 D~L)</div>
+        <div class="info-panel-title">客戶詳細資訊 (D~L欄)</div>
         <div id="customerDetailBadges" class="badges-container">
             <span style="color:#555; font-size:14px; padding:10px;">尚未選擇客戶</span>
         </div>
@@ -336,34 +295,53 @@
 
     <script>
       // ==========================================
+      // 強力偵錯版 Script
+      // ==========================================
+      
+      // 1. 檢查 config.js
       if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
-          alert("錯誤：找不到設定檔 config.js！");
+          alert("❌ 嚴重錯誤：Config.js 未載入或是 URL 是空的！\n請檢查檔案是否在同一目錄，且檔名正確。");
       }
       const GAS_API_URL = CONFIG.API_URL; 
 
       let currentCustomer = null;
       let cart = [];
 
-      // API
+      // API 核心 (增加詳細報錯)
       function callApi(action, data = {}) {
         return fetch(GAS_API_URL, {
             method: "POST",
             body: JSON.stringify({ action: action, data: data })
         })
-        .then(res => res.json())
-        .then(result => {
-            if(result.error) throw new Error(result.error);
-            return result;
+        .then(res => {
+            // 檢查 HTTP 狀態
+            if (!res.ok) {
+                throw new Error("HTTP 連線錯誤 (Status " + res.status + ")");
+            }
+            return res.text(); // 先讀成文字，怕 JSON 解析失敗
         })
-        .catch(err => { console.error(err); });
+        .then(text => {
+            try {
+                return JSON.parse(text); // 嘗試解析 JSON
+            } catch (e) {
+                // 如果後端回傳的不是 JSON (例如 HTML 錯誤頁面)
+                throw new Error("後端回傳格式錯誤 (非 JSON)，可能原因：\n1. GAS 程式碼報錯\n2. 網址錯誤\n\n內容片段: " + text.substring(0, 50));
+            }
+        })
+        .then(result => {
+            if(result.error) throw new Error("API 邏輯錯誤: " + result.error);
+            return result;
+        });
       }
 
       function loadTodayCustomers() {
         const listEl = document.getElementById('customerList');
-        listEl.innerHTML = '<div class="loading-text">載入中...</div>';
+        listEl.innerHTML = '<div class="loading-text">連線中 (Loading)...</div>';
         
         callApi('getTodayRawData')
           .then(data => {
+             // alert("✅ 測試成功！收到 " + data.length + " 筆資料"); // 如果資料跑出來了，這行可以註解掉
+             
              listEl.innerHTML = '';
              if (!data || data.length === 0) {
                listEl.innerHTML = '<div class="loading-text">今日尚無 KIOSK 資料</div>';
@@ -376,89 +354,57 @@
                  <div class="customer-phone">${cust.phone}</div>
                  <div class="customer-time">${cust.time} - ${cust.name || '未填寫'}</div>
                `;
-               div.onclick = () => selectCustomer(cust, div);
+               // ⚠️ 修正重點：之前這行寫錯了，導致點擊沒反應
+               div.onclick = () => selectCustomer(cust, div); 
                listEl.appendChild(div);
              });
+          })
+          .catch(err => {
+             // 🔴 這裡會顯示真正的錯誤原因
+             alert("❌ 讀取失敗：\n" + err.message);
+             listEl.innerHTML = '<div class="loading-text" style="color:red">連線錯誤，請通知管理員</div>';
           });
       }
 
-      // ✅ 修改：選擇客戶時，智慧讀取 D~L 欄位並顯示
+      // 選擇客戶並顯示燈號
       function selectCustomer(cust, element) {
         currentCustomer = cust;
-        // 更新上方標題
         document.getElementById('currentCustomerDisplay').innerText = `${cust.name || '未填寫'} (${cust.phone})`;
-        
-        // 左側列表選取效果
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
         if(element) element.classList.add('selected');
 
-        // --- 處理下方燈號 (讀取 GAS 傳回來的 extraInfo D~L) ---
         const badgeContainer = document.getElementById('customerDetailBadges');
-        badgeContainer.innerHTML = ''; // 先清空
+        badgeContainer.innerHTML = ''; 
 
-        // 如果 GAS 還沒回傳 extraInfo，顯示提示
+        // 檢查 extraInfo
         if (!cust.extraInfo || cust.extraInfo.length === 0) {
-            badgeContainer.innerHTML = '<span style="color:#666; padding:10px; font-style:italic;">無詳細 CRM 資料 (D~L欄)</span>';
+            badgeContainer.innerHTML = '<span style="color:#666; padding:10px; font-style:italic;">無詳細資料 (D~L欄)</span>';
             return;
         }
 
         let html = '';
-        
-        // 遍歷 D~L 欄位資料
         cust.extraInfo.forEach(info => {
-            const label = (info.label || "").toString().trim(); // 標題 (例如: 消費方式)
-            const val = (info.value || "").toString().trim();   // 內容 (例如: 儲值卡Card)
-            
-            // 決定樣式類別 (預設為普通)
+            const label = (info.label || "").toString().trim(); 
+            const val = (info.value || "").toString().trim();   
             let cssClass = 'info-badge';
             
-            // --- 智慧判斷邏輯 ---
-
-            // 1. 會員編號 (J欄: Number) -> 最重要！
-            // 判斷依據：標題包含 "編號" 或 "Number"，且內容不為空
+            // 智慧配色邏輯
             if (label.includes("編號") || label.includes("Number")) {
-                if (val && val !== "否N" && val !== "不加Zero") {
-                    cssClass = 'info-badge badge-id'; // 亮藍色
-                } else {
-                    cssClass = 'info-badge badge-dim'; // 如果沒有編號，就變暗
-                }
+                if (val && val !== "否N" && val !== "不加Zero") cssClass = 'info-badge badge-id';
+                else cssClass = 'info-badge badge-dim';
             }
-
-            // 2. 消費方式 (D欄: Type) -> 儲值卡要亮
             else if (label.includes("消費") || label.includes("Type")) {
-                if (val.includes("儲值") || val.includes("Card")) {
-                    cssClass = 'info-badge badge-vip'; // 金色
-                }
+                if (val.includes("儲值") || val.includes("Card")) cssClass = 'info-badge badge-vip';
             }
-
-            // 3. 特別註明 (L欄: Note) -> 有寫東西就要紅字警告
-            else if (label.includes("註明") || label.includes("Note")) {
-                cssClass = 'info-badge badge-alert'; // 紅色
+            else if (label.includes("註明") || label.includes("Note")) cssClass = 'info-badge badge-alert';
+            else if (label.includes("卡放") || label.includes("Card")) {
+                 if (val.includes("是") || val.includes("Y")) cssClass = 'info-badge badge-warn';
+                 else cssClass = 'info-badge badge-dim';
             }
+            else if (val.includes("不加") || val.includes("Default") || val.includes("Zero")) cssClass = 'info-badge badge-dim';
 
-            // 4. 卡放店內 (I欄: Card) -> "是" 就要提醒
-            else if (label.includes("卡放") || label.includes("Card")) { // 英文標題Card可能重複，中文較準
-                 if (val.includes("是") || val.includes("Y")) {
-                    cssClass = 'info-badge badge-warn'; // 橘色
-                 } else {
-                    cssClass = 'info-badge badge-dim'; // "否" 就變暗
-                 }
-            }
-
-            // 5. 降低干擾：如果是 "不加Zero"、"Default"、"否N"，則變暗
-            else if (val.includes("不加") || val.includes("Default") || val.includes("Zero")) {
-                cssClass = 'info-badge badge-dim';
-            }
-
-            // 產生 HTML
-            html += `
-                <div class="${cssClass}">
-                    <span class="badge-label">${label}</span>
-                    <span class="badge-value">${val}</span>
-                </div>
-            `;
+            html += `<div class="${cssClass}"><span class="badge-label">${label}</span><span class="badge-value">${val}</span></div>`;
         });
-
         badgeContainer.innerHTML = html;
       }
 
@@ -468,11 +414,7 @@
             currentCustomer = { name: "手動輸入", phone: input.trim() };
             document.getElementById('currentCustomerDisplay').innerText = input.trim();
             document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
-            
-            // 手動輸入時，下方顯示簡單提示
-            document.getElementById('customerDetailBadges').innerHTML = `
-                <div class="info-badge badge-warn"><span class="badge-value">手動輸入模式</span></div>
-            `;
+            document.getElementById('customerDetailBadges').innerHTML = `<div class="info-badge badge-warn"><span class="badge-value">手動輸入模式</span></div>`;
         }
       }
 
@@ -481,10 +423,7 @@
         currentCustomer = null;
         document.getElementById('currentCustomerDisplay').innerText = "現場客";
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
-        
-        // 清空燈號
         document.getElementById('customerDetailBadges').innerHTML = '<span style="color:#555; font-size:14px; padding:10px;">尚未選擇客戶</span>';
-        
         renderCart();
       }
 
@@ -510,13 +449,7 @@
         let total = 0;
         cart.forEach((item, index) => {
           total += item.price;
-          html += `
-            <div class="cart-item">
-              <span class="cart-item-name">${item.name}</span>
-              <span class="cart-item-price">$${item.price}</span>
-              <a href="#" class="btn-remove" onclick="removeItem(${index})">✕</a>
-            </div>
-          `;
+          html += `<div class="cart-item"><span class="cart-item-name">${item.name}</span><span class="cart-item-price">$${item.price}</span><a href="#" class="btn-remove" onclick="removeItem(${index})">✕</a></div>`;
         });
         container.innerHTML = html;
         totalEl.innerText = total;
@@ -526,13 +459,11 @@
         if (cart.length === 0) { alert("購物車是空的！"); return; }
         const now = new Date();
         document.getElementById('printTime').innerText = now.toLocaleString('zh-TW', {hour12:false});
-        
         let customerText = "現場客";
         if (currentCustomer) {
             customerText = currentCustomer.name === "手動輸入" ? currentCustomer.phone : `${currentCustomer.name || ''} ${currentCustomer.phone}`;
         }
         document.getElementById('printCustomer').innerText = customerText;
-        
         let itemsHtml = '';
         let total = 0;
         cart.forEach(item => {
@@ -541,28 +472,9 @@
         });
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
-
         window.print();
       }
 
-    function loadTodayCustomers() {
-        const listEl = document.getElementById('customerList');
-        listEl.innerHTML = '<div class="loading-text">連線中...</div>';
-        
-        // 加入這行測試：看看網址對不對
-        // alert("正在連線到: " + GAS_API_URL); 
-
-        callApi('getTodayRawData')
-          .then(data => {
-             // alert("收到資料筆數: " + (data ? data.length : 0)); // 加入這行測試
-             listEl.innerHTML = '';
-             // ... (略)
-          })
-          .catch(err => {
-             alert("連線失敗：" + err); // 顯示錯誤訊息
-          });
-    }        
-        
       window.onload = loadTodayCustomers;
     </script>
 </body>
