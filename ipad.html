@@ -370,36 +370,31 @@
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
         if(element) element.classList.add('selected');
 
-        // --- 處理下方燈號 (GAS D~L欄) ---
+        // --- 處理下方燈號 (讀取 GAS 傳回來的 extraInfo) ---
         const badgeContainer = document.getElementById('customerDetailBadges');
-        badgeContainer.innerHTML = ''; // 清空
+        badgeContainer.innerHTML = ''; // 先清空
 
-        // ⚠️ 這裡我用「模擬資料」來展示效果，因為您的後端 API 還沒傳這些欄位回來
-        // 等您 GAS 改好後，請把下方這段換成真實資料 loop
-        
-        // 假資料 Demo: 假設這是從 D~L 欄讀到的
-        const mockData = [
-            { label: "會員等級", val: "VIP 金卡", type: "highlight" },
-            { label: "儲值餘額", val: "$1,250", type: "money" },
-            { label: "點數", val: "300點", type: "normal" },
-            { label: "備註", val: "喜歡溫水洗", type: "warn" },
-            { label: "上次消費", val: "2023/12/10", type: "normal" },
-            { label: "洗衣習慣", val: "自備洗劑", type: "normal" },
-            { label: "代號", val: "K882", type: "normal" }
-        ];
+        // 檢查是否有 extraInfo (即 D~L 欄資料)
+        if (!cust.extraInfo || cust.extraInfo.length === 0) {
+            badgeContainer.innerHTML = '<span style="color:#777; padding:10px;">此客戶無額外資訊 (D~L欄為空)</span>';
+            return;
+        }
 
-        // 產生燈號 HTML
         let html = '';
-        mockData.forEach(info => {
-            let classType = '';
-            if(info.type === 'highlight') classType = 'badge-highlight';
-            if(info.type === 'money') classType = 'badge-money';
-            if(info.type === 'warn') classType = 'badge-warn';
+        cust.extraInfo.forEach(info => {
+            // 根據標題名稱決定顏色 (這裡可以自訂邏輯)
+            let classType = 'info-badge'; // 預設灰色
+            
+            // 如果標題包含 "金"、"餘額"、"VIP"，就變亮色
+            const label = info.label.toString();
+            if (label.includes("餘額") || label.includes("金")) classType += ' badge-money'; // 綠色
+            else if (label.includes("VIP") || label.includes("等級")) classType += ' badge-highlight'; // 藍色
+            else if (label.includes("備註") || label.includes("習慣")) classType += ' badge-warn'; // 橘色
 
             html += `
-                <div class="info-badge ${classType}">
+                <div class="${classType}">
                     <span class="badge-label">${info.label}:</span>
-                    <span class="badge-value">${info.val}</span>
+                    <span class="badge-value">${info.value}</span>
                 </div>
             `;
         });
