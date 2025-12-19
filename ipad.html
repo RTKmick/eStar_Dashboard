@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
-    <title>eStar POS 系統 (紀錄追蹤版)</title>
+    <title>eStar POS 系統 (帶入舊單版)</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -46,7 +46,7 @@
 
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-      /* --- 底部導航列 (改為3欄) --- */
+      /* --- 底部導航列 --- */
       .tab-bar {
         height: var(--tab-bar-height);
         background-color: #161618;
@@ -184,22 +184,40 @@
       }
 
       /* ========================================= */
-      /* --- Page 3: 紀錄追蹤 (新增) --- */
+      /* --- Page 3: 紀錄追蹤 --- */
       /* ========================================= */
       .record-list { flex: 1; overflow-y: auto; padding: 0; }
       .record-item {
         padding: 15px; border-bottom: 1px solid #3a3a3c; background: #2c2c2e;
-        display: flex; flex-direction: column; gap: 5px;
+        display: flex; flex-direction: column; gap: 8px;
+        position: relative;
       }
       .record-header { display: flex; justify-content: space-between; align-items: center; }
       .record-phone { font-size: 18px; font-weight: bold; color: #fff; }
       .record-total { font-size: 18px; font-weight: bold; color: #30d158; }
       .record-time { font-size: 12px; color: #8e8e93; }
+      
+      /* 內容區塊 */
+      .record-body {
+          display: flex; justify-content: space-between; align-items: flex-start;
+          gap: 10px;
+      }
       .record-items { 
-        font-size: 14px; color: #ccc; margin-top: 5px; 
-        line-height: 1.4; 
+        font-size: 14px; color: #ccc; 
+        line-height: 1.4; flex: 1;
         background: #1c1c1e; padding: 8px; border-radius: 6px;
       }
+      
+      /* 帶入按鈕 */
+      .restore-btn {
+          background: #32d74b; color: white; border: none;
+          padding: 8px 16px; border-radius: 8px;
+          font-weight: bold; font-size: 14px; cursor: pointer;
+          white-space: nowrap; height: fit-content;
+          align-self: center; /* 垂直置中 */
+      }
+      .restore-btn:active { transform: scale(0.95); background: #248a32; }
+
       .record-note { font-size: 12px; color: #ff9f0a; font-style: italic; }
 
       /* 顏色定義 */
@@ -387,13 +405,13 @@
 
       let currentCustomer = null;
       let cart = [];
+      let historyDataCache = []; // 暫存歷史紀錄，供帶入功能使用
 
       window.onload = function() {
           const today = new Date().toISOString().split('T')[0];
           document.getElementById('dateInput').value = today;
           loadCustomersByDate(); 
-          // 可以在啟動時順便載入歷史紀錄
-          // loadOrderHistory();
+          // loadOrderHistory(); // 可選擇是否要在開啟時載入
       };
 
       function switchTab(pageId) {
@@ -403,7 +421,7 @@
           document.querySelectorAll('.tab-item')[pageId - 1].classList.add('active');
           
           if(pageId === 2) updatePreviewInfo();
-          if(pageId === 3) loadOrderHistory(); // 切換到 Tab 3 自動載入
+          if(pageId === 3) loadOrderHistory(); 
       }
 
       function loadCustomersByDate() {
@@ -556,7 +574,7 @@
           return { timeStr, customerText, note };
       }
 
-      // === 新增：讀取歷史紀錄 ===
+      // === 讀取歷史紀錄 ===
       function loadOrderHistory() {
           const listEl = document.getElementById('recordList');
           listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">載入中...</div>';
@@ -567,21 +585,19 @@
           })
           .then(res => res.json())
           .then(result => {
+               historyDataCache = result; // 存入快取供帶入使用
                listEl.innerHTML = '';
                if (!result || result.length === 0) {
                  listEl.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">尚無歷史紀錄</div>';
                  return;
                }
-               result.forEach(rec => {
-                   // rec: { timestamp, phone, name, itemsStr, total, note }
+               result.forEach((rec, index) => {
                    const div = document.createElement('div');
                    div.className = 'record-item';
                    
-                   // 格式化日期 (只取時間部分，或自行調整)
                    let timeDisplay = rec.timestamp;
                    try {
                        const d = new Date(rec.timestamp);
-                       // 簡單格式化
                        timeDisplay = d.toLocaleString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
                    } catch(e) {}
 
@@ -591,7 +607,10 @@
                            <span class="record-total">$${rec.total}</span>
                        </div>
                        <div class="record-time">${timeDisplay}</div>
-                       <div class="record-items">${rec.itemsStr}</div>
+                       <div class="record-body">
+                           <div class="record-items">${rec.itemsStr}</div>
+                           <button class="restore-btn" onclick="restoreOrder(${index})">↩ 帶入</button>
+                       </div>
                        ${rec.note ? `<div class="record-note">備註: ${rec.note}</div>` : ''}
                    `;
                    listEl.appendChild(div);
@@ -603,11 +622,41 @@
            });
       }
 
-      // === 修改：列印並存檔 ===
+      // === 帶入舊訂單邏輯 ===
+      function restoreOrder(index) {
+          const rec = historyDataCache[index];
+          if (!rec) return;
+
+          // 1. 還原客戶
+          currentCustomer = { name: rec.name, phone: rec.phone };
+          document.getElementById('currentCustomerDisplay').innerText = `${rec.name || ''} ${rec.phone}`;
+          // 注意：歷史紀錄沒有 extraInfo (Badges)，所以設為空或提示
+          document.getElementById('customerDetailBadges').innerHTML = `<div class="info-badge badge-vip"><span>歷史帶入資料</span></div>`;
+
+          // 2. 還原購物車 (從 RawJSON 解析)
+          try {
+              if (rec.jsonStr) {
+                  cart = JSON.parse(rec.jsonStr);
+              } else {
+                  // 如果舊資料沒有 JSON，就無法精準還原，清空購物車
+                  cart = [];
+                  alert("此筆資料為舊格式，無法自動還原購物車內容，請手動點單。");
+              }
+          } catch (e) {
+              cart = [];
+              console.error("Parse Error", e);
+          }
+
+          // 3. 更新畫面並跳轉
+          renderCart();
+          updatePreviewInfo();
+          switchTab(2); // 跳轉到點單頁
+      }
+
+      // === 列印並存檔 (含自動清空) ===
       function printReceipt() {
         if (cart.length === 0) { alert("購物車是空的！"); return; }
         
-        // 1. 更新介面資料
         const info = updatePreviewInfo();
         
         document.getElementById('printTime').innerText = document.getElementById('prevTime').innerText;
@@ -618,7 +667,6 @@
         
         let itemsHtml = '';
         let total = 0;
-        // 準備存檔用的 items 字串
         let itemsForSave = []; 
         
         cart.forEach(item => {
@@ -630,27 +678,27 @@
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
 
-        // 2. 執行列印
+        // 1. 列印
         window.print();
 
-        // 3. 背景執行存檔 (不影響列印)
+        // 2. 存檔
         const orderData = {
-            timestamp: new Date().toISOString(), // 或用 info.timeStr
+            timestamp: new Date().toISOString(),
             phone: currentCustomer ? currentCustomer.phone : '',
             name: currentCustomer ? (currentCustomer.name || '') : '',
-            itemsStr: itemsForSave.join(', '), // 存成人看的字串
+            itemsStr: itemsForSave.join(', '), 
             total: total,
             note: info.note,
-            jsonStr: JSON.stringify(cart) // 存成程式看的 JSON
+            jsonStr: JSON.stringify(cart) // 存入 JSON 供帶入使用
         };
         
-        // 呼叫 API 存檔
         fetch(GAS_API_URL, {
             method: "POST", 
             body: JSON.stringify({ action: 'saveOrder', data: orderData }) 
         }).then(res => {
             console.log("Order saved");
-            // 可選：列印後自動清空，或跳出 Toast 通知
+            // 3. 存檔成功後，自動清空
+            clearOrder(); 
         }).catch(err => console.error("Save failed", err));
       }
     </script>
