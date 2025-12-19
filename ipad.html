@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
-    <title>eStar POS 系統 (流程優化版)</title>
+    <title>eStar POS 系統 (切換自動清空版)</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -455,6 +455,10 @@
       }
 
       function selectCustomer(cust, element) {
+        // === 修正：選新客人前，強制清空舊資料 ===
+        cart = []; 
+        renderCart(); 
+        
         currentCustomer = cust;
         document.getElementById('currentCustomerDisplay').innerText = `${cust.name || ''} ${cust.phone}`;
         document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
@@ -494,6 +498,10 @@
       function manualInput() {
         const input = prompt("請輸入客戶手機或備註", "");
         if (input && input.trim() !== "") {
+            // === 修正：手動輸入前，強制清空舊資料 ===
+            cart = []; 
+            renderCart();
+
             currentCustomer = { name: "手動輸入", phone: input.trim() };
             document.getElementById('currentCustomerDisplay').innerText = input.trim();
             document.getElementById('customerDetailBadges').innerHTML = `<div class="info-badge badge-warn"><span>手動輸入模式</span></div>`;
@@ -621,7 +629,7 @@
            });
       }
 
-      // === 帶入舊訂單邏輯 (已修正：帶入後可修改) ===
+      // === 修正：帶入舊訂單邏輯 (帶入後可修改) ===
       function restoreOrder(index) {
           const rec = historyDataCache[index];
           if (!rec) return;
@@ -652,7 +660,7 @@
           alert("已帶入資料，請進行修改，確認無誤後請按下「列印單據」。");
       }
 
-      // === 列印並存檔 (已修正：存檔成功後才清空) ===
+      // === 修正：列印並存檔 (存檔成功後才清空) ===
       function printReceipt() {
         if (cart.length === 0) { alert("購物車是空的！"); return; }
 
@@ -683,10 +691,10 @@
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
 
-        // 1. 先執行列印 (瀏覽器會跳出視窗，這會暫停 JS)
+        // 1. 先執行列印
         window.print();
 
-        // 2. 列印視窗關閉後，執行背景存檔
+        // 2. 執行背景存檔
         btn.innerText = "存檔中...";
         
         const orderData = {
@@ -703,7 +711,7 @@
             method: "POST", 
             body: JSON.stringify({ action: 'saveOrder', data: orderData }) 
         }).then(res => {
-            // 3. 存檔成功 -> 清空資料 (這是您要求的重要步驟)
+            // 3. 存檔成功 -> 清空資料 (重點修改)
             clearOrder(); 
             // 恢復按鈕
             btn.disabled = false;
