@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
-    <title>eStar POS 系統 (最終優化版)</title>
+    <title>eStar POS 系統 (紀錄追蹤版)</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -18,7 +18,7 @@
         --active-color: #0a84ff;
         --tab-bar-height: 70px;
         --sidebar-width: 280px; 
-        --receipt-width: 320px; /* 稍微加寬一點讓預覽更舒適 */
+        --receipt-width: 320px;
       }
 
       body {
@@ -34,11 +34,8 @@
 
       /* --- 分頁容器 --- */
       .page-container {
-        flex: 1;
-        position: relative;
-        overflow: hidden;
-        width: 100%;
-        height: calc(100% - var(--tab-bar-height));
+        flex: 1; position: relative; overflow: hidden;
+        width: 100%; height: calc(100% - var(--tab-bar-height));
       }
 
       .page {
@@ -49,7 +46,7 @@
 
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-      /* --- 底部導航列 --- */
+      /* --- 底部導航列 (改為3欄) --- */
       .tab-bar {
         height: var(--tab-bar-height);
         background-color: #161618;
@@ -113,24 +110,19 @@
         flex: 1; display: flex; flex-direction: column;
         border-right: 1px solid #3a3a3c; background: #1c1c1e; min-width: 0;
       }
-
-      /* 讓按鈕區自動伸縮，留空間給下方 */
       .products-grid {
-        flex: 1; 
-        display: grid; 
+        flex: 1; display: grid; 
         grid-template-columns: repeat(4, 1fr); 
         grid-auto-rows: 85px; 
         gap: 8px; padding: 10px;
         overflow-y: auto; -webkit-overflow-scrolling: touch;
         align-content: start;
       }
-
       .right-panel {
         width: var(--receipt-width); flex-shrink: 0;
         background: #e5e5ea; display: flex; flex-direction: column;
         padding: 10px; box-sizing: border-box;
       }
-
       .action-bar {
         padding: 10px; background: #2c2c2e; border-bottom: 1px solid #3a3a3c;
         display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
@@ -150,67 +142,65 @@
       .p-title { font-size: 18px; font-weight: 800; color: white; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
       .p-sub { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.9); }
 
-      /* --- 加大詳細資訊區 --- */
       .detail-area {
-        height: 220px; /* 加大高度 */
-        background: #252525; border-top: 1px solid #3a3a3c;
+        height: 220px; background: #252525; border-top: 1px solid #3a3a3c;
         padding: 12px; display: flex; flex-direction: column; flex-shrink: 0;
       }
       .detail-title { font-size: 14px; color: #8e8e93; margin-bottom: 8px; font-weight: bold; }
-      
       .badges-container { 
         display: flex; flex-wrap: wrap; gap: 8px; 
-        overflow-y: auto; /* 內容多時可捲動 */
-        align-content: flex-start;
-        flex: 1;
+        overflow-y: auto; align-content: flex-start; flex: 1;
       }
       .info-badge {
         display: inline-flex; align-items: center;
         border: 1px solid #48484a; padding: 6px 10px; border-radius: 8px;
         font-size: 15px; color: #fff; background: #2c2c2e;
-        max-width: 100%; /* 防止爆版 */
+        max-width: 100%; 
       }
-      .badge-value {
-        white-space: normal; /* 允許文字折行 */
-        word-break: break-all;
-      }
-      
-      /* --- 預覽單據優化 --- */
+      .badge-value { white-space: normal; word-break: break-all; }
+
+      /* 預覽單據 */
       .receipt-paper {
         flex: 1; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         padding: 15px; font-family: 'Courier New', Courier, monospace; 
-        color: #000; font-size: 15px; /* 字體加大 */
+        color: #000; font-size: 15px;
         overflow-y: auto; border-radius: 4px; display: flex; flex-direction: column; margin-bottom: 10px;
       }
       .prev-header { text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 5px; }
       .prev-dashed { border-top: 1px dashed #000; margin: 8px 0; }
       .prev-info { font-size: 13px; line-height: 1.4; }
-      
-      /* 項目列表 */
       .prev-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; }
       .prev-item-price { font-weight: bold; margin-left: 5px; }
-      
-      /* 刪除按鈕 (X) 優化 */
       .prev-del { 
-        color: #ff3b30; /* 紅色 */
-        margin-left: 10px; cursor: pointer; 
-        font-weight: 900; font-size: 22px; /* 加大 */
-        padding: 0 10px; /* 增加點擊範圍 */
+        color: #ff3b30; margin-left: 10px; cursor: pointer; 
+        font-weight: 900; font-size: 22px; padding: 0 10px; 
       }
-      
       .prev-total-row { text-align: right; margin-top: 15px; font-size: 22px; font-weight: 800; }
-      
-      /* 預覽底部資訊 (拉大間距) */
-      .prev-footer { 
-        font-size: 13px; margin-top: 15px; 
-        line-height: 2.0; /* 加大行距，避免擁擠 */
-        color: #333; 
-      }
+      .prev-footer { font-size: 13px; margin-top: 15px; line-height: 2.0; color: #333; }
       
       .checkout-btn {
         width: 100%; background: #000; color: white; border: none; padding: 15px;
         font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; flex-shrink: 0;
       }
+
+      /* ========================================= */
+      /* --- Page 3: 紀錄追蹤 (新增) --- */
+      /* ========================================= */
+      .record-list { flex: 1; overflow-y: auto; padding: 0; }
+      .record-item {
+        padding: 15px; border-bottom: 1px solid #3a3a3c; background: #2c2c2e;
+        display: flex; flex-direction: column; gap: 5px;
+      }
+      .record-header { display: flex; justify-content: space-between; align-items: center; }
+      .record-phone { font-size: 18px; font-weight: bold; color: #fff; }
+      .record-total { font-size: 18px; font-weight: bold; color: #30d158; }
+      .record-time { font-size: 12px; color: #8e8e93; }
+      .record-items { 
+        font-size: 14px; color: #ccc; margin-top: 5px; 
+        line-height: 1.4; 
+        background: #1c1c1e; padding: 8px; border-radius: 6px;
+      }
+      .record-note { font-size: 12px; color: #ff9f0a; font-style: italic; }
 
       /* 顏色定義 */
       .grad-blue { background: linear-gradient(145deg, #007aff, #0056b3); }
@@ -225,7 +215,7 @@
       .badge-alert { background: rgba(255, 69, 58, 0.2); border-color: #ff453a; color: #ff453a; }
       .badge-warn { background: rgba(255, 159, 10, 0.15); border-color: #ff9f0a; color: #ff9f0a; }
 
-      /* === 列印隱藏區 (維持不變) === */
+      /* === 列印隱藏區 === */
       @media print {
         @page { size: 80mm auto; margin: 0; }
         body * { visibility: hidden; height: 0; overflow: hidden; }
@@ -254,41 +244,26 @@
         
         <div id="page-1" class="page active">
             <div class="page-split-row">
-                
                 <div class="date-sidebar">
                     <div class="sidebar-title">客戶查詢</div>
-                    
                     <div class="date-picker-wrapper">
                         <label class="date-label">選擇日期:</label>
                         <input type="date" id="dateInput" class="styled-date-input">
                     </div>
-                    
-                    <button class="refresh-btn-large" onclick="loadCustomersByDate()">
-                        查詢資料
-                    </button>
-                    
-                    <div style="margin-top:auto; font-size:12px; color:#666;">
-                        * 預設為今日
-                    </div>
+                    <button class="refresh-btn-large" onclick="loadCustomersByDate()">查詢資料</button>
+                    <div style="margin-top:auto; font-size:12px; color:#666;">* 預設為今日</div>
                 </div>
-
                 <div class="list-content">
-                    <div class="list-header">
-                        查詢結果列表 (<span id="currentDateDisplay">今天</span>)
-                    </div>
+                    <div class="list-header">查詢結果列表 (<span id="currentDateDisplay">今天</span>)</div>
                     <div class="customer-list" id="customerList">
-                        <div class="loading-text" style="padding:20px; text-align:center; color:#888;">
-                            請點選查詢...
-                        </div>
+                        <div class="loading-text" style="padding:20px; text-align:center; color:#888;">請點選查詢...</div>
                     </div>
                 </div>
-
             </div>
         </div>
 
         <div id="page-2" class="page">
             <div class="page-split-row">
-                
                 <div class="left-panel">
                     <div class="action-bar">
                         <div class="current-user-info">
@@ -300,7 +275,6 @@
                             <button class="btn-cmd btn-clear" onclick="clearOrder()">清空</button>
                         </div>
                     </div>
-
                     <div class="products-grid">
                         <button class="product-btn grad-blue" onclick="addToCart('洗衣(小-半)', 40)"><span class="p-title">洗衣 $40</span><span class="p-sub">(小-半)</span></button>
                         <button class="product-btn grad-blue" onclick="addToCart('洗衣(小)', 70)"><span class="p-title">洗衣 $70</span><span class="p-sub">(小)</span></button>
@@ -311,29 +285,24 @@
                         <button class="product-btn grad-red" onclick="addToCart('烘衣 20元', 20)"><span class="p-title">烘衣 $20</span></button>
                         <button class="product-btn grad-red" onclick="addToCart('烘衣 40元', 40)"><span class="p-title">烘衣 $40</span></button>
                         <button class="product-btn grad-red" onclick="addToCart('烘衣 60元', 60)"><span class="p-title">烘衣 $60</span></button>
-                        
                         <button class="product-btn grad-red" onclick="addToCart('烘衣 80元', 80)"><span class="p-title">烘衣 $80</span></button>
                         <button class="product-btn grad-red" onclick="addToCart('烘衣 100元', 100)"><span class="p-title">烘衣 $100</span></button>
                         <button class="product-btn grad-red" onclick="addToCart('烘衣 120元', 120)"><span class="p-title">烘衣 $120</span></button>
-                        
                         <button class="product-btn grad-red" onclick="addToCart('烘衣 140元', 140)"><span class="p-title">烘衣 $140</span></button> 
 
                         <button class="product-btn grad-purple" onclick="addToCart('加洗劑', 10)"><span class="p-title">加洗劑 $10</span></button>
                         <button class="product-btn grad-purple" onclick="addToCart('靜電香紙', 10)"><span class="p-title">靜電香紙 $10</span></button>
                         <button class="product-btn grad-purple" onclick="addToCart('裝衣袋', 10)"><span class="p-title">裝衣袋 $10</span></button>
                         <button class="product-btn grad-purple" onclick="addToCart('香香豆', 30)"><span class="p-title">香香豆 $30</span></button>
-                        
                         <button class="product-btn grad-green" onclick="addToCart('代摺費用', 20)"><span class="p-title">代摺費 $20</span></button>
                     </div>
-
                     <div class="detail-area">
-                        <div class="detail-title">客戶詳細資訊 (長度自動調整)</div>
+                        <div class="detail-title">客戶詳細資訊</div>
                         <div id="customerDetailBadges" class="badges-container">
                             <span style="color:#666;">尚未選擇客戶</span>
                         </div>
                     </div>
                 </div>
-
                 <div class="right-panel">
                     <div class="receipt-paper">
                         <div class="prev-header">eStar 衣洗淨</div>
@@ -343,14 +312,11 @@
                             客戶: <span id="prevCustomer">現場客</span>
                         </div>
                         <div class="prev-dashed"></div>
-                        
                         <div id="prevCartList" style="flex:1;">
                             <div style="text-align:center; color:#999; margin-top:20px;">(空白)</div>
                         </div>
-
                         <div class="prev-dashed"></div>
                         <div class="prev-total-row">總計: $<span id="prevTotal">0</span></div>
-
                         <div class="prev-footer">
                             消費方式: <span id="prevPayType">[系統]</span><br>
                             會員卡號: <span id="prevMemberId"></span><br>
@@ -359,10 +325,20 @@
                             已通知OK □
                         </div>
                     </div>
-
                     <button class="checkout-btn" onclick="printReceipt()">列印單據</button>
                 </div>
+            </div>
+        </div>
 
+        <div id="page-3" class="page">
+            <div class="list-content">
+                <div class="list-header" style="display:flex; justify-content:space-between;">
+                    <span>歷史紀錄 (最近50筆)</span>
+                    <button onclick="loadOrderHistory()" style="background:#48484a; border:none; color:white; border-radius:5px; padding:2px 8px;">刷新</button>
+                </div>
+                <div class="record-list" id="recordList">
+                    <div class="loading-text" style="padding:20px; text-align:center; color:#888;">載入中...</div>
+                </div>
             </div>
         </div>
 
@@ -376,6 +352,10 @@
         <div class="tab-item" onclick="switchTab(2)">
             <div class="tab-icon">🛒</div>
             <div>點單結帳</div>
+        </div>
+        <div class="tab-item" onclick="switchTab(3)">
+            <div class="tab-icon">📝</div>
+            <div>紀錄追蹤</div>
         </div>
     </div>
 
@@ -412,6 +392,8 @@
           const today = new Date().toISOString().split('T')[0];
           document.getElementById('dateInput').value = today;
           loadCustomersByDate(); 
+          // 可以在啟動時順便載入歷史紀錄
+          // loadOrderHistory();
       };
 
       function switchTab(pageId) {
@@ -419,7 +401,9 @@
           document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
           document.getElementById('page-' + pageId).classList.add('active');
           document.querySelectorAll('.tab-item')[pageId - 1].classList.add('active');
+          
           if(pageId === 2) updatePreviewInfo();
+          if(pageId === 3) loadOrderHistory(); // 切換到 Tab 3 自動載入
       }
 
       function loadCustomersByDate() {
@@ -530,7 +514,6 @@
         let total = 0;
         cart.forEach((item, index) => {
           total += item.price;
-          // 紅色 X 號
           html += `<div class="prev-item">
             <span class="prev-item-name">${item.name}</span>
             <span style="display:flex; align-items:center;">
@@ -569,12 +552,64 @@
           document.getElementById('prevPayType').innerText = payType;
           document.getElementById('prevMemberId').innerText = memberId;
           document.getElementById('prevNote').innerText = note;
+          
+          return { timeStr, customerText, note };
       }
 
+      // === 新增：讀取歷史紀錄 ===
+      function loadOrderHistory() {
+          const listEl = document.getElementById('recordList');
+          listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">載入中...</div>';
+          
+          fetch(GAS_API_URL, {
+              method: "POST", 
+              body: JSON.stringify({ action: 'getOrderHistory', data: {} }) 
+          })
+          .then(res => res.json())
+          .then(result => {
+               listEl.innerHTML = '';
+               if (!result || result.length === 0) {
+                 listEl.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">尚無歷史紀錄</div>';
+                 return;
+               }
+               result.forEach(rec => {
+                   // rec: { timestamp, phone, name, itemsStr, total, note }
+                   const div = document.createElement('div');
+                   div.className = 'record-item';
+                   
+                   // 格式化日期 (只取時間部分，或自行調整)
+                   let timeDisplay = rec.timestamp;
+                   try {
+                       const d = new Date(rec.timestamp);
+                       // 簡單格式化
+                       timeDisplay = d.toLocaleString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                   } catch(e) {}
+
+                   div.innerHTML = `
+                       <div class="record-header">
+                           <span class="record-phone">${rec.name || ''} ${rec.phone}</span>
+                           <span class="record-total">$${rec.total}</span>
+                       </div>
+                       <div class="record-time">${timeDisplay}</div>
+                       <div class="record-items">${rec.itemsStr}</div>
+                       ${rec.note ? `<div class="record-note">備註: ${rec.note}</div>` : ''}
+                   `;
+                   listEl.appendChild(div);
+               });
+           })
+           .catch(err => {
+               console.error(err);
+               listEl.innerHTML = '<div style="padding:20px; color:red; text-align:center;">讀取失敗</div>';
+           });
+      }
+
+      // === 修改：列印並存檔 ===
       function printReceipt() {
         if (cart.length === 0) { alert("購物車是空的！"); return; }
         
-        updatePreviewInfo();
+        // 1. 更新介面資料
+        const info = updatePreviewInfo();
+        
         document.getElementById('printTime').innerText = document.getElementById('prevTime').innerText;
         document.getElementById('printCustomer').innerText = document.getElementById('prevCustomer').innerText;
         document.getElementById('printPayType').innerText = document.getElementById('prevPayType').innerText;
@@ -583,14 +618,40 @@
         
         let itemsHtml = '';
         let total = 0;
+        // 準備存檔用的 items 字串
+        let itemsForSave = []; 
+        
         cart.forEach(item => {
           total += item.price;
           itemsHtml += `<div class="r-item"><span>${item.name}</span><span>$${item.price}</span></div>`;
+          itemsForSave.push(item.name + " $" + item.price);
         });
+        
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
 
+        // 2. 執行列印
         window.print();
+
+        // 3. 背景執行存檔 (不影響列印)
+        const orderData = {
+            timestamp: new Date().toISOString(), // 或用 info.timeStr
+            phone: currentCustomer ? currentCustomer.phone : '',
+            name: currentCustomer ? (currentCustomer.name || '') : '',
+            itemsStr: itemsForSave.join(', '), // 存成人看的字串
+            total: total,
+            note: info.note,
+            jsonStr: JSON.stringify(cart) // 存成程式看的 JSON
+        };
+        
+        // 呼叫 API 存檔
+        fetch(GAS_API_URL, {
+            method: "POST", 
+            body: JSON.stringify({ action: 'saveOrder', data: orderData }) 
+        }).then(res => {
+            console.log("Order saved");
+            // 可選：列印後自動清空，或跳出 Toast 通知
+        }).catch(err => console.error("Save failed", err));
       }
     </script>
 </body>
