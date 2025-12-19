@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
-    <title>eStar POS 系統 (帶入舊單版)</title>
+    <title>eStar POS 系統 (流程優化版)</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -182,6 +182,9 @@
         width: 100%; background: #000; color: white; border: none; padding: 15px;
         font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; flex-shrink: 0;
       }
+      .checkout-btn:disabled {
+        background: #555; cursor: not-allowed;
+      }
 
       /* ========================================= */
       /* --- Page 3: 紀錄追蹤 --- */
@@ -197,7 +200,6 @@
       .record-total { font-size: 18px; font-weight: bold; color: #30d158; }
       .record-time { font-size: 12px; color: #8e8e93; }
       
-      /* 內容區塊 */
       .record-body {
           display: flex; justify-content: space-between; align-items: flex-start;
           gap: 10px;
@@ -208,13 +210,12 @@
         background: #1c1c1e; padding: 8px; border-radius: 6px;
       }
       
-      /* 帶入按鈕 */
       .restore-btn {
           background: #32d74b; color: white; border: none;
           padding: 8px 16px; border-radius: 8px;
           font-weight: bold; font-size: 14px; cursor: pointer;
           white-space: nowrap; height: fit-content;
-          align-self: center; /* 垂直置中 */
+          align-self: center;
       }
       .restore-btn:active { transform: scale(0.95); background: #248a32; }
 
@@ -405,13 +406,12 @@
 
       let currentCustomer = null;
       let cart = [];
-      let historyDataCache = []; // 暫存歷史紀錄，供帶入功能使用
+      let historyDataCache = []; 
 
       window.onload = function() {
           const today = new Date().toISOString().split('T')[0];
           document.getElementById('dateInput').value = today;
           loadCustomersByDate(); 
-          // loadOrderHistory(); // 可選擇是否要在開啟時載入
       };
 
       function switchTab(pageId) {
@@ -574,7 +574,6 @@
           return { timeStr, customerText, note };
       }
 
-      // === 讀取歷史紀錄 ===
       function loadOrderHistory() {
           const listEl = document.getElementById('recordList');
           listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">載入中...</div>';
@@ -585,7 +584,7 @@
           })
           .then(res => res.json())
           .then(result => {
-               historyDataCache = result; // 存入快取供帶入使用
+               historyDataCache = result;
                listEl.innerHTML = '';
                if (!result || result.length === 0) {
                  listEl.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">尚無歷史紀錄</div>';
@@ -609,7 +608,7 @@
                        <div class="record-time">${timeDisplay}</div>
                        <div class="record-body">
                            <div class="record-items">${rec.itemsStr}</div>
-                           <button class="restore-btn" onclick="restoreOrder(${index})">↩ 帶入</button>
+                           <button class="restore-btn" onclick="restoreOrder(${index})">↩ 帶入修改</button>
                        </div>
                        ${rec.note ? `<div class="record-note">備註: ${rec.note}</div>` : ''}
                    `;
@@ -622,40 +621,46 @@
            });
       }
 
-      // === 帶入舊訂單邏輯 ===
+      // === 帶入舊訂單邏輯 (已修正：帶入後可修改) ===
       function restoreOrder(index) {
           const rec = historyDataCache[index];
           if (!rec) return;
 
-          // 1. 還原客戶
+          // 1. 還原客戶 (標記為歷史帶入)
           currentCustomer = { name: rec.name, phone: rec.phone };
           document.getElementById('currentCustomerDisplay').innerText = `${rec.name || ''} ${rec.phone}`;
-          // 注意：歷史紀錄沒有 extraInfo (Badges)，所以設為空或提示
-          document.getElementById('customerDetailBadges').innerHTML = `<div class="info-badge badge-vip"><span>歷史帶入資料</span></div>`;
+          document.getElementById('customerDetailBadges').innerHTML = `<div class="info-badge badge-vip"><span>✏️ 正在修改歷史訂單</span></div>`;
 
-          // 2. 還原購物車 (從 RawJSON 解析)
+          // 2. 還原購物車
           try {
               if (rec.jsonStr) {
                   cart = JSON.parse(rec.jsonStr);
               } else {
-                  // 如果舊資料沒有 JSON，就無法精準還原，清空購物車
                   cart = [];
-                  alert("此筆資料為舊格式，無法自動還原購物車內容，請手動點單。");
+                  alert("此筆為舊格式資料，僅還原客戶資訊，請重新點選商品。");
               }
           } catch (e) {
               cart = [];
               console.error("Parse Error", e);
           }
 
-          // 3. 更新畫面並跳轉
+          // 3. 更新畫面並切換到點單頁
           renderCart();
           updatePreviewInfo();
-          switchTab(2); // 跳轉到點單頁
+          switchTab(2); 
+          
+          alert("已帶入資料，請進行修改，確認無誤後請按下「列印單據」。");
       }
 
-      // === 列印並存檔 (含自動清空) ===
+      // === 列印並存檔 (已修正：存檔成功後才清空) ===
       function printReceipt() {
         if (cart.length === 0) { alert("購物車是空的！"); return; }
+
+        // 鎖定按鈕避免重複按
+        const btn = document.querySelector('.checkout-btn');
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = "處理中...";
         
         const info = updatePreviewInfo();
         
@@ -678,10 +683,12 @@
         document.getElementById('printItems').innerHTML = itemsHtml;
         document.getElementById('printTotal').innerText = total;
 
-        // 1. 列印
+        // 1. 先執行列印 (瀏覽器會跳出視窗，這會暫停 JS)
         window.print();
 
-        // 2. 存檔
+        // 2. 列印視窗關閉後，執行背景存檔
+        btn.innerText = "存檔中...";
+        
         const orderData = {
             timestamp: new Date().toISOString(),
             phone: currentCustomer ? currentCustomer.phone : '',
@@ -689,17 +696,23 @@
             itemsStr: itemsForSave.join(', '), 
             total: total,
             note: info.note,
-            jsonStr: JSON.stringify(cart) // 存入 JSON 供帶入使用
+            jsonStr: JSON.stringify(cart) 
         };
         
         fetch(GAS_API_URL, {
             method: "POST", 
             body: JSON.stringify({ action: 'saveOrder', data: orderData }) 
         }).then(res => {
-            console.log("Order saved");
-            // 3. 存檔成功後，自動清空
+            // 3. 存檔成功 -> 清空資料 (這是您要求的重要步驟)
             clearOrder(); 
-        }).catch(err => console.error("Save failed", err));
+            // 恢復按鈕
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }).catch(err => {
+            alert("⚠️ 存檔失敗，請檢查網路連線。");
+            btn.disabled = false;
+            btn.innerText = originalText;
+        });
       }
     </script>
 </body>
