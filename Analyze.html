@@ -489,11 +489,17 @@
         function drawMonthlyChart(data) {
             const dt = new google.visualization.DataTable();
             dt.addColumn('string', '月份');
-            dt.addColumn('number', '實際來客');
+            // 修改順序：先加入目標，再加入實際
             dt.addColumn('number', '目標/對比'); 
-            dt.addRows(data.map(i => [i.month, i.visits, i.target]));
+            dt.addColumn('number', '實際來客');
+            
+            // 資料加入順序也要對應調整：[月份, 目標, 實際]
+            dt.addRows(data.map(i => [i.month, i.target, i.visits]));
+            
             new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, {
-                colors: ['#4e73df', '#ff9900'], legend: { position: 'bottom' },
+                // 顏色建議調整：第一色給目標(橘色)，第二色給實際(藍色)
+                colors: ['#ff9900', '#4e73df'], 
+                legend: { position: 'bottom' },
                 vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
                 chartArea: { left: 50, top: 30, width: '100%', height: '70%' },
                 animation: { startup: true, duration: 1000, easing: 'out' },
