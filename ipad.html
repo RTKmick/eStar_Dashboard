@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
-    <title>eStar POS 系統 (切換自動清空版)</title>
+    <title>eStar POS 系統 (自動存檔版)</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -401,6 +401,7 @@
     </div>
 
     <script>
+      // --- GitHub 專用 API 核心 ---
       if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) alert("❌ Config Error");
       const GAS_API_URL = CONFIG.API_URL; 
 
