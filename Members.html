@@ -60,9 +60,12 @@
           
           <div class="col-md-5 border-end"> 
             <label for="phoneInput" class="form-label fw-bold">1. 輸入電話號碼</label>
-            <div class="input-group mb-3">
-              <input type="tel" id="phoneInput" class="form-control" placeholder="例如：0912345678">
-              <button class="btn btn-primary" type="button" onclick="checkPhone()">🔍 查詢與配號</button>
+            <div class="mb-3">
+              <input type="tel" id="phoneInput" class="form-control form-control-lg" placeholder="例如：0912345678">
+              
+              <div class="d-flex justify-content-end mt-2">
+                <button class="btn btn-primary px-4" type="button" onclick="checkPhone()">🔍 查詢與配號</button>
+              </div>
             </div>
 
             <div id="customerInfoBox">
