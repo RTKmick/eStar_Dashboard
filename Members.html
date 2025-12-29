@@ -158,13 +158,22 @@
             method: "POST",
             body: JSON.stringify({ action: action, data: data })
         })
-        .then(res => res.json())
+        .then(res => {
+            // 1. 先檢查是否為 JSON 格式
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                return res.json();
+            } else {
+                // 如果 Google 回傳 HTML (通常是錯誤頁面)，手動拋出錯誤，避免白畫面
+                throw new Error("伺服器回應非 JSON 格式 (可能是維護中或後端忙碌)");
+            }
+        })
         .then(result => {
             if(result.error) throw new Error(result.error);
             return result;
         });
     }
-
+    
     // ==========================================
     // 邏輯區
     // ==========================================
