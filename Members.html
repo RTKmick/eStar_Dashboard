@@ -29,6 +29,16 @@
     .choice-btn.active { border-color: #1cc88a; background-color: #e6fffa; color: #1cc88a; box-shadow: 0 0 10px rgba(28, 200, 138, 0.3); }
     .choice-btn.disabled-look { background-color: #e9ecef; color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; opacity: 0.6; }
 
+    /* 手動輸入區塊樣式 */
+    .manual-box {
+        border: 2px solid #ddd; border-radius: 10px; padding: 15px; transition: all 0.3s; background: #fff;
+    }
+    .manual-box.manual-active {
+        border-color: #36b9cc; background-color: #f0fbfc; box-shadow: 0 0 10px rgba(54, 185, 204, 0.3);
+    }
+    .manual-box.disabled-look { background-color: #e9ecef; opacity: 0.6; pointer-events: none; }
+
+
     /* 表格設定 */
     .table-responsive { max-height: 600px; overflow-y: auto; } /* 恢復滾軸 */
     thead { position: sticky; top: 0; z-index: 10; }
@@ -84,11 +94,22 @@
           </div>
           
           <div class="col-md-7 d-flex flex-column justify-content-center">
-            <label class="form-label text-center w-100 fw-bold">2. 選擇會員編號 (二選一)</label>
             
-            <div class="row mb-4" id="choiceContainer" style="opacity: 0.5; pointer-events: none;">
+            <label class="form-label text-center w-100 fw-bold">2. 選擇會員編號 (二選一)</label>
+            <div class="row mb-3" id="choiceContainer" style="opacity: 0.5; pointer-events: none;">
               <div class="col-6"><button type="button" id="btnM" class="choice-btn" onclick="selectId('M')">M---</button></div>
               <div class="col-6"><button type="button" id="btnF" class="choice-btn" onclick="selectId('F')">F---</button></div>
+            </div>
+
+            <div id="manualContainer" class="manual-box mb-4" style="opacity: 0.5; pointer-events: none;" onclick="selectManual()">
+                <label class="form-label fw-bold text-secondary w-100 text-center" style="cursor: pointer;">3. 手動輸入指定編號 (選填)</label>
+                <div class="input-group">
+                    <select class="form-select text-center fw-bold" id="manualPrefix" style="max-width: 80px; font-size: 1.2rem;" onchange="selectManual()">
+                        <option value="M">M</option>
+                        <option value="F" selected>F</option>
+                    </select>
+                    <input type="number" id="manualNumber" class="form-control text-center fw-bold" style="font-size: 1.2rem;" placeholder="輸入數字 (例如 52)" oninput="selectManual()" onfocus="selectManual()">
+                </div>
             </div>
             
             <div class="d-flex flex-column align-items-end border-top pt-4">
@@ -162,12 +183,10 @@
             body: JSON.stringify({ action: action, data: data })
         })
         .then(res => {
-            // 1. 先檢查是否為 JSON 格式
             const contentType = res.headers.get("content-type");
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 return res.json();
             } else {
-                // 如果 Google 回傳 HTML (通常是錯誤頁面)，手動拋出錯誤，避免白畫面
                 throw new Error("伺服器回應非 JSON 格式 (可能是維護中或後端忙碌)");
             }
         })
@@ -276,7 +295,7 @@
             if (response.hasId) {
                 // === 舊會員：顯示已有編號，鎖定新增，顯示刪除 ===
                 document.getElementById('statusMsg').textContent = `⚠️ 此客戶已有編號：${response.existingId}`;
-                disableChoices(true); 
+                disableAllChoices(true); 
                 document.getElementById('btnM').textContent = "已有編號";
                 document.getElementById('btnF').textContent = response.existingId;
                 
@@ -293,37 +312,67 @@
                 document.getElementById('btnM').textContent = response.nextM;
                 document.getElementById('btnF').textContent = response.nextF;
                 
-                disableChoices(false);
+                disableAllChoices(false);
                 document.getElementById('btnDelete').style.display = 'none';
             }
         })
         .catch(err => {
             showLoading(false);
             document.getElementById('statusMsg').textContent = err.message;
-            disableChoices(true);
+            disableAllChoices(true);
             document.getElementById('btnDelete').style.display = 'none';
         });
     }
 
-    function disableChoices(disabled) {
-      const container = document.getElementById('choiceContainer');
-      if (disabled) {
-        container.style.opacity = '0.5'; container.style.pointerEvents = 'none';
-      } else {
-        container.style.opacity = '1'; container.style.pointerEvents = 'auto';
-      }
+    // 控制自動與手動區塊的啟用狀態
+    function disableAllChoices(disabled) {
+      const autoContainer = document.getElementById('choiceContainer');
+      const manualContainer = document.getElementById('manualContainer');
+      const opacity = disabled ? '0.5' : '1';
+      const pointer = disabled ? 'none' : 'auto';
+
+      autoContainer.style.opacity = opacity; autoContainer.style.pointerEvents = pointer;
+      manualContainer.style.opacity = opacity; manualContainer.style.pointerEvents = pointer;
+      
+      // 清空手動輸入框
+      document.getElementById('manualNumber').value = '';
     }
 
+    // 選擇自動編號 (M/F 按鈕)
     function selectId(type) {
       currentSelection = type;
       const btnM = document.getElementById('btnM');
       const btnF = document.getElementById('btnF');
+      const manualBox = document.getElementById('manualContainer');
+
+      // 重置樣式
       btnM.classList.remove('active', 'disabled-look');
       btnF.classList.remove('active', 'disabled-look');
+      manualBox.classList.remove('manual-active'); // 移除手動區塊的高亮
 
+      // 設定自動按鈕樣式
       if (type === 'M') { btnM.classList.add('active'); btnF.classList.add('disabled-look'); } 
       else { btnF.classList.add('active'); btnM.classList.add('disabled-look'); }
       
+      document.getElementById('btnAdd').disabled = false;
+    }
+
+    // 選擇手動輸入 (當點擊手動區塊或輸入時觸發)
+    function selectManual() {
+      currentSelection = 'MANUAL';
+      const btnM = document.getElementById('btnM');
+      const btnF = document.getElementById('btnF');
+      const manualBox = document.getElementById('manualContainer');
+
+      // 讓上方自動按鈕變灰
+      btnM.classList.remove('active');
+      btnF.classList.remove('active');
+      btnM.classList.add('disabled-look');
+      btnF.classList.add('disabled-look');
+
+      // 讓手動區塊變亮
+      manualBox.classList.add('manual-active');
+
       document.getElementById('btnAdd').disabled = false;
     }
 
@@ -332,9 +381,14 @@
       document.getElementById('btnAdd').disabled = true;
       const btnM = document.getElementById('btnM');
       const btnF = document.getElementById('btnF');
+      const manualBox = document.getElementById('manualContainer');
+      
       btnM.classList.remove('active', 'disabled-look');
       btnF.classList.remove('active', 'disabled-look');
+      manualBox.classList.remove('manual-active');
+      
       btnM.textContent = "M---"; btnF.textContent = "F---";
+      document.getElementById('manualNumber').value = '';
     }
 
     let loadingTimer = null;
@@ -356,7 +410,23 @@
     // 確認新增
     function confirmAdd() {
       const phone = document.getElementById('phoneInput').value.trim();
-      const selectedId = currentSelection === 'M' ? nextIds.M : nextIds.F;
+      let selectedId = '';
+
+      // 判斷是自動還是手動
+      if (currentSelection === 'MANUAL') {
+        const prefix = document.getElementById('manualPrefix').value;
+        const number = document.getElementById('manualNumber').value.trim();
+        if (!number) {
+            alert("請輸入手動編號的數字部分！");
+            document.getElementById('manualNumber').focus();
+            return;
+        }
+        selectedId = prefix + number; // 例如 F + 52 = F52
+      } else if (currentSelection === 'M') {
+        selectedId = nextIds.M;
+      } else if (currentSelection === 'F') {
+        selectedId = nextIds.F;
+      }
       
       if (!phone || !selectedId) return;
       if (!confirm(`確定要將電話 ${phone} 設定為會員 ${selectedId} 嗎？`)) return;
@@ -373,7 +443,7 @@
                 document.getElementById('phoneInput').value = '';
                 document.getElementById('customerInfoBox').style.display = 'none';
                 resetSelection();
-                disableChoices(true);
+                disableAllChoices(true);
                 document.getElementById('statusMsg').textContent = "";
                 loadTable(); 
             } else {
@@ -390,10 +460,10 @@
         });
     }
 
-    // 🆕 刪除會員
+    // 刪除會員
     function confirmDelete() {
       const phone = document.getElementById('show-phone').textContent;
-      const currentId = document.getElementById('btnF').textContent; // 或 btnF 顯示的現有編號
+      const currentId = document.getElementById('btnF').textContent; 
 
       if (!phone) return;
 
@@ -415,9 +485,9 @@
                 alert(response.message);
                 document.getElementById('phoneInput').value = '';
                 document.getElementById('customerInfoBox').style.display = 'none';
-                document.getElementById('btnDelete').style.display = 'none'; // 隱藏按鈕
+                document.getElementById('btnDelete').style.display = 'none'; 
                 resetSelection();
-                disableChoices(true);
+                disableAllChoices(true);
                 document.getElementById('statusMsg').textContent = "";
                 loadTable(); 
             } else {
