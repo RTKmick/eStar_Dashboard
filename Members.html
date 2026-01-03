@@ -302,7 +302,7 @@
                 // 鎖定確認新增
                 document.getElementById('btnAdd').disabled = true;
                 
-                // 顯示刪除按鈕
+                // 【顯示刪除按鈕】
                 document.getElementById('btnDelete').style.display = 'inline-block';
             } else {
                 // === 新會員：隱藏刪除，開放新增 ===
@@ -421,7 +421,7 @@
             document.getElementById('manualNumber').focus();
             return;
         }
-        selectedId = prefix + number; // 例如 F + 52 = F52
+        selectedId = prefix + number; 
       } else if (currentSelection === 'M') {
         selectedId = nextIds.M;
       } else if (currentSelection === 'F') {
@@ -460,10 +460,10 @@
         });
     }
 
-    // 刪除會員
+    // 🆕 刪除會員
     function confirmDelete() {
       const phone = document.getElementById('show-phone').textContent;
-      const currentId = document.getElementById('btnF').textContent; 
+      const currentId = document.getElementById('btnF').textContent; // 或 btnF 顯示的現有編號
 
       if (!phone) return;
 
@@ -485,7 +485,7 @@
                 alert(response.message);
                 document.getElementById('phoneInput').value = '';
                 document.getElementById('customerInfoBox').style.display = 'none';
-                document.getElementById('btnDelete').style.display = 'none'; 
+                document.getElementById('btnDelete').style.display = 'none'; // 隱藏按鈕
                 resetSelection();
                 disableAllChoices(true);
                 document.getElementById('statusMsg').textContent = "";
