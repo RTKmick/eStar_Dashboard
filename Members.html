@@ -58,11 +58,27 @@
     .info-val { color: #000; font-weight: bold; }
     .info-row { border-bottom: 1px dashed #ddd; padding: 4px 0; }
     
-    /* 提醒文字區塊 */
-    #systemNotice {
+    /* 🆕 公告區塊樣式 (移到右下角) */
+    .notice-box {
+        margin-top: 20px;
+        padding: 15px;
+        border: 2px solid #666; /* 深灰色外框 */
+        border-radius: 10px;
+        background-color: #fff;
+        width: 100%;
+        text-align: left;
+        display: none; /* 預設隱藏，有內容才顯示 */
+    }
+    .notice-title {
+        color: red;
+        font-weight: bold;
         font-size: 1.1rem;
-        margin-bottom: 20px;
-        white-space: pre-wrap; /* 保留換行 */
+        margin-right: 10px;
+    }
+    .notice-content {
+        color: #0d6efd; /* 藍色文字 */
+        font-weight: bold;
+        font-size: 1.1rem;
     }
   </style>
 </head>
@@ -73,8 +89,6 @@
     <div class="card">
       <div class="card-header header-add">➕ 新增會員 (Assign Member ID)</div>
       <div class="card-body">
-        
-        <div id="systemNotice" class="text-primary fw-bold text-center" style="display:none;"></div>
         
         <div class="row g-4"> 
           
@@ -138,6 +152,11 @@
                 🗑️ 刪除會員編號
               </button>
 
+            </div>
+
+            <div id="noticeContainer" class="notice-box">
+                <span class="notice-title">★公告事項:</span>
+                <span id="systemNoticeText" class="notice-content"></span>
             </div>
 
           </div>
@@ -217,17 +236,18 @@
     window.onload = function() { 
         showLoading(false);
         loadTable(); 
-        loadSystemNotice(); // 🆕 4. 載入提醒文字
+        loadSystemNotice(); // 載入提醒文字
     };
 
-    // 🆕 4. 載入提醒文字的函式
+    // 🆕 4. 載入提醒文字的函式 (修改為填入新的位置)
     function loadSystemNotice() {
         callApi('getSystemNotice')
         .then(res => {
             if (res.success && res.message) {
-                const noticeDiv = document.getElementById('systemNotice');
-                noticeDiv.textContent = res.message;
-                noticeDiv.style.display = 'block';
+                const container = document.getElementById('noticeContainer');
+                const contentSpan = document.getElementById('systemNoticeText');
+                contentSpan.textContent = res.message;
+                container.style.display = 'block'; // 有資料才顯示外框
             }
         })
         .catch(err => console.log("載入公告失敗:", err));
