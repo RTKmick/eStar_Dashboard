@@ -57,6 +57,13 @@
     .info-label { font-weight: bold; color: #666; width: 100px; display: inline-block; }
     .info-val { color: #000; font-weight: bold; }
     .info-row { border-bottom: 1px dashed #ddd; padding: 4px 0; }
+    
+    /* 提醒文字區塊 */
+    #systemNotice {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        white-space: pre-wrap; /* 保留換行 */
+    }
   </style>
 </head>
 <body>
@@ -66,9 +73,12 @@
     <div class="card">
       <div class="card-header header-add">➕ 新增會員 (Assign Member ID)</div>
       <div class="card-body">
+        
+        <div id="systemNotice" class="text-primary fw-bold text-center" style="display:none;"></div>
+        
         <div class="row g-4"> 
           
-          <div class="col-md-5 border-end"> 
+          <div class="col-md-6"> 
             <label for="phoneInput" class="form-label fw-bold">1. 輸入電話號碼</label>
             <div class="mb-3">
               <input type="tel" id="phoneInput" class="form-control form-control-lg" placeholder="例如：0912345678">
@@ -93,7 +103,7 @@
             </div>
           </div>
           
-          <div class="col-md-7 d-flex flex-column justify-content-center">
+          <div class="col-md-6 d-flex flex-column justify-content-center border-start-md">
             
             <label class="form-label text-center w-100 fw-bold">2. 選擇會員編號 (二選一)</label>
             <div class="row mb-3" id="choiceContainer" style="opacity: 0.5; pointer-events: none;">
@@ -125,7 +135,7 @@
               </div>
 
               <button id="btnDelete" class="btn btn-outline-danger px-4 py-1 mt-2" style="display: none;" onclick="confirmDelete()">
-                🗑️ 刪除會員資格
+                🗑️ 刪除會員編號
               </button>
 
             </div>
@@ -201,11 +211,27 @@
     // ==========================================
     let currentSelection = null; 
     let nextIds = { M: '', F: '' };
+    // 🆕 1. 用於防呆：儲存所有已存在的會員編號
+    let existingMemberIds = new Set();
 
     window.onload = function() { 
         showLoading(false);
         loadTable(); 
+        loadSystemNotice(); // 🆕 4. 載入提醒文字
     };
+
+    // 🆕 4. 載入提醒文字的函式
+    function loadSystemNotice() {
+        callApi('getSystemNotice')
+        .then(res => {
+            if (res.success && res.message) {
+                const noticeDiv = document.getElementById('systemNotice');
+                noticeDiv.textContent = res.message;
+                noticeDiv.style.display = 'block';
+            }
+        })
+        .catch(err => console.log("載入公告失敗:", err));
+    }
 
     function loadTable() {
       const loadingHTML = '<tr><td colspan="4" class="text-center p-3">載入中...</td></tr>';
@@ -238,6 +264,7 @@
       const tbodyM = document.querySelector('#tableM tbody');
       const tbodyF = document.querySelector('#tableF tbody');
       tbodyM.innerHTML = ''; tbodyF.innerHTML = '';
+      existingMemberIds.clear(); // 清空舊資料
 
       if (!data || data.length <= 1) {
         tbodyM.innerHTML = '<tr><td colspan="4" class="text-center">無資料</td></tr>';
@@ -247,12 +274,20 @@
 
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
+        
+        // M 系列 (Index 2 是編號)
         if (row[2] && String(row[2]).trim() !== "") {
+          const id = String(row[2]).trim();
+          existingMemberIds.add(id); // 加入防呆清單
           const tr = document.createElement('tr');
           [0, 1, 2, 3].forEach(idx => { const td = document.createElement('td'); td.textContent = row[idx]; tr.appendChild(td); });
           tbodyM.appendChild(tr);
         }
+        
+        // F 系列 (Index 7 是編號)
         if (row[7] && String(row[7]).trim() !== "") {
+          const id = String(row[7]).trim();
+          existingMemberIds.add(id); // 加入防呆清單
           const tr = document.createElement('tr');
           [5, 6, 7, 8].forEach(idx => { const td = document.createElement('td'); td.textContent = row[idx]; tr.appendChild(td); });
           tbodyF.appendChild(tr);
@@ -429,6 +464,14 @@
       }
       
       if (!phone || !selectedId) return;
+
+      // 🆕 1. 防呆檢查：如果 ID 已存在表格中
+      if (existingMemberIds.has(selectedId)) {
+        alert(`❌ 錯誤：會員編號 【${selectedId}】 已經有人使用了！\n\n系統將重新整理，請再次確認。`);
+        location.reload(); // 重新整理網頁
+        return;
+      }
+
       if (!confirm(`確定要將電話 ${phone} 設定為會員 ${selectedId} 嗎？`)) return;
 
       showLoading(true);
@@ -460,14 +503,14 @@
         });
     }
 
-    // 🆕 刪除會員
+    // 刪除會員
     function confirmDelete() {
       const phone = document.getElementById('show-phone').textContent;
       const currentId = document.getElementById('btnF').textContent; // 或 btnF 顯示的現有編號
 
       if (!phone) return;
 
-      if (!confirm(`⚠️ 警告：\n確定要刪除 ${phone} 的會員資格 (${currentId}) 嗎？\n\n刪除後該編號將變為空號，且不會影響目前的配號順序。`)) {
+      if (!confirm(`⚠️ 警告：\n確定要刪除 ${phone} 的會員編號 (${currentId}) 嗎？\n\n刪除後該編號將變為空號，且不會影響目前的配號順序。`)) {
         return;
       }
 
