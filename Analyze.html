@@ -389,12 +389,15 @@
                 legend: { position: 'bottom', textStyle: { fontSize: 11 } },
                 chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
                 
-                // 🆕 修改點：設定 Y 軸最大值為 3,500,000
+                // 🆕 修改點：設定 Y 軸最大值 3.5M，並強制切分 8 條線
                 vAxis: { 
                     format: 'short',
                     viewWindow: {
+                        min: 0,
                         max: 3500000  // 設定最高刻度為 3.5M
-                    }
+                    },
+                    // 加上這行：強制顯示 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 (共8條線)
+                    gridlines: { count: 8 } 
                 },
                 
                 bar: { groupWidth: '60%' },
