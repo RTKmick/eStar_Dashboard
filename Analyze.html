@@ -30,6 +30,8 @@
         }
         
         #headerDate { margin-left: 15px; font-weight: normal; color: #555; font-size: 1.2rem; }
+        
+        /* 統一所有區塊標題樣式 (包含 Overview) */
         h2 { font-size: 1.2rem; color: #555; margin-top: 0; font-weight: 600; margin-bottom: 15px; }
         
         /* --- 按鈕 --- */
@@ -51,6 +53,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
             padding: 15px; margin-bottom: 0; width: 100%; min-width: 0; 
             transition: transform 0.2s;
+            display: flex; flex-direction: column; /* 讓內容垂直排列 */
         }
         @media (hover: hover) { .chart-container:hover { transform: translateY(-2px); } }
         
@@ -67,7 +70,7 @@
             .chart-container { padding: 20px; } 
         }
 
-        /* 電腦版：上方三個區塊並排 */
+        /* 電腦版：上方三個區塊並排 (Overview + 2個圓餅圖) */
         @media (min-width: 1200px) {
             .dashboard-grid { grid-template-columns: 1fr 1fr 1fr; }
         }
@@ -86,20 +89,26 @@
         }
 
         /* --- 統計卡片 --- */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
-            gap: 15px; margin-top: 10px;
+        .stat-card { 
+            padding: 15px; 
+            border-radius: 10px; 
+            color: white; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            height: 100%; /* 確保高度一致 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .stat-card { padding: 15px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .stat-label { font-size: 0.9rem; opacity: 0.95; margin-bottom: 5px; font-weight: 500; }
         .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
 
         /* 顏色定義 */
         .bg-danger { background-color: #dc3545 !important; }
-        .bg-warning { background-color: #ffc107 !important; color: #212529 !important; } /* 黃色字體改深色較易讀 */
+        .bg-warning { background-color: #ffc107 !important; color: #212529 !important; } 
         .bg-primary { background-color: #0d6efd !important; }
         .bg-success { background-color: #198754 !important; }
-        .bg-gray { background-color: #6c757d !important; } /* 灰色樣式 */
+        .bg-gray { background-color: #6c757d !important; } 
         .text-white { color: white !important; }
 
         .google-visualization-table-table { font-size: 14px !important; }
@@ -130,56 +139,52 @@
 
     <div class="dashboard-grid">
         
-        <div class="mb-4" id="overview-panel" style="grid-column: 1 / -1;">
-            <h5 style="font-weight: bold; margin-bottom: 15px; color: #6c757d;">即時營運概況 (Overview)</h5>
-            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+        <div class="chart-container" id="overview-panel">
+            <h2>即時營運概況 (Overview)</h2>
             
-                <div style="flex: 1 1 45%; min-width: 140px;">
+            <div class="row g-2" style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
+                <div style="flex: 1 1 45%;">
                     <div class="stat-card bg-danger">
                         <div class="stat-label">本日 (Today)</div>
                         <div class="stat-value" id="count-today">0</div>
                     </div>
                 </div>
-
-                <div style="flex: 1 1 45%; min-width: 140px;">
+                <div style="flex: 1 1 45%;">
                     <div class="stat-card bg-warning text-white">
                         <div class="stat-label">本週 (Week)</div>
                         <div class="stat-value" id="count-week">0</div>
                     </div>
                 </div>
-
-                <div style="flex: 1 1 45%; min-width: 140px;">
+                <div style="flex: 1 1 45%;">
                     <div class="stat-card bg-primary">
                         <div class="stat-label">本月 (Month)</div>
                         <div class="stat-value" id="count-month">0</div>
                     </div>
                 </div>
-
-                <div style="flex: 1 1 45%; min-width: 140px;">
+                <div style="flex: 1 1 45%;">
                     <div class="stat-card bg-success">
-                        <div class="stat-label">年度 (Current Year)</div>
+                        <div class="stat-label">年度 (Current)</div>
                         <div class="stat-value" id="count-year">0</div>
                     </div>
                 </div>
 
-                <div style="flex: 1 1 100%;"> 
+                <div style="flex: 1 1 100%;">
                     <div class="stat-card bg-gray">
                         <div class="stat-label">年度 (2025)</div>
                         <div class="stat-value" id="count-2025">Loading...</div>
                     </div>
                 </div>
-
             </div>
         </div>
 
         <div class="chart-container">
             <h2>付款類型 (By Person)</h2>
-            <div id="paymentChartContainer" style="height: 300px;"></div>
+            <div id="paymentChartContainer" style="height: 300px; flex: 1;"></div>
         </div>
 
         <div class="chart-container">
             <h2>消費貢獻度 (By Volume)</h2>
-            <div id="consumptionChartContainer" style="height: 300px;"></div>
+            <div id="consumptionChartContainer" style="height: 300px; flex: 1;"></div>
         </div>
 
         <div class="chart-container full-width">
@@ -239,12 +244,10 @@
             body: JSON.stringify({ action: action, data: data })
         })
         .then(res => {
-            // 1. 先檢查是否為 JSON 格式
             const contentType = res.headers.get("content-type");
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 return res.json();
             } else {
-                // 如果 Google 回傳 HTML (通常是錯誤頁面)，手動拋出錯誤，避免白畫面
                 throw new Error("伺服器回應非 JSON 格式 (可能是維護中或後端忙碌)");
             }
         })
@@ -280,9 +283,8 @@
         console.log('2. 營收資料已回傳:', data);
 
         if (!data || !data.monthly || !data.annual) return;
-        globalRevenueData = data; // 快取起來
+        globalRevenueData = data; 
 
-        // --- 小工具：金額轉數字 ---
         function parseMoney(value) {
             if (!value) return 0;
             if (typeof value === 'number') return value;
@@ -295,7 +297,6 @@
         var mRaw = data.monthly;
         if (mRaw.length > 1) {
             var mRows = mRaw.slice(1); 
-            
             var lineChartData = new google.visualization.DataTable();
             lineChartData.addColumn('string', '月份'); 
 
@@ -344,7 +345,6 @@
         var aRaw = data.annual;
         if (aRaw.length > 1) {
             var aRows = aRaw.slice(1); 
-            
             var comboData = new google.visualization.DataTable();
             comboData.addColumn('string', '年份');
             comboData.addColumn('number', '總營收');
@@ -359,7 +359,6 @@
                 var revenue = parseMoney(row[1]);
                 var salary1 = parseMoney(row[2]);
                 var salary2 = parseMoney(row[3]);
-                
                 var label = (revenue / 10000).toFixed(1) + '萬';
 
                 var barStyle = '';
@@ -372,7 +371,6 @@
                 } else {
                     barStyle = 'color: #36b9cc; opacity: 1';
                 }
-
                 return [yearStr, revenue, barStyle, label, salary1, salary2];
             });
             comboData.addRows(processedRows);
@@ -443,7 +441,7 @@
         document.getElementById('headerDate').textContent = dateStr;
     }
 
-    // 🆕 數字跳動動畫函式 (補回)
+    // 🆕 數字跳動動畫
     function animateValue(id, start, end, duration) {
         var obj = document.getElementById(id);
         if (!obj) return;
@@ -464,23 +462,18 @@
                 clearInterval(timer);
             }
         }
-        
         timer = setInterval(run, stepTime);
         run();
     }
 
-    // 🆕 更新概況數據函式 (補回)
+    // 🆕 更新概況數據
     function updateOverview(data) {
-        // 從 data.summary 中取得各個數值，若無則預設為 0
         var todayVal = (data.summary && data.summary.today) ? data.summary.today.count : 0;
         var weekVal = (data.summary && data.summary.week) ? data.summary.week.count : 0;
         var monthVal = (data.summary && data.summary.month) ? data.summary.month.count : 0;
         var yearVal = (data.summary && data.summary.year) ? data.summary.year.count : 0;
-        
-        // 取得 2025 年數據 (後端傳來的 data.year2025)，若無則顯示 0
         var year2025Val = (data.year2025) ? data.year2025 : 0;
 
-        // 執行數字跳動動畫 (從 0 跳到 目標值)
         animateValue("count-today", 0, todayVal, 1000);
         animateValue("count-week", 0, weekVal, 1000);
         animateValue("count-month", 0, monthVal, 1000);
@@ -489,9 +482,7 @@
     }
 
     function drawAllCharts(data) {
-        // 呼叫 updateOverview 來更新上方方塊
-        updateOverview(data);
-
+        updateOverview(data); // 呼叫更新方塊
         if (data.paymentTypes) drawPaymentChart(data.paymentTypes);
         if (data.consumptionTypes) drawConsumptionChart(data.consumptionTypes);
         if (data.monthlyVisits) drawMonthlyChart(data.monthlyVisits);
@@ -527,31 +518,22 @@
         dt.addColumn('string', '類型');
         dt.addColumn('number', '加權次數');
         const isMobile = window.innerWidth < 600;
-        const colorMap = {
-        '儲值卡Card': '#673AB7',   
-        '現金付款Cash': '#4CAF50', 
-        '電子支付E-pay': '#03A9F4' 
-        };
+        const colorMap = { '儲值卡Card': '#673AB7', '現金付款Cash': '#4CAF50', '電子支付E-pay': '#03A9F4' };
         const chartColors = [];
         const rows = data.map(i => {
-        chartColors.push(colorMap[i.label] || '#9E9E9E');
-        return [i.label, i.count];
+            chartColors.push(colorMap[i.label] || '#9E9E9E');
+            return [i.label, i.count];
         });
         dt.addRows(rows);
         const options = {
-        pieHole: 0.4, is3D: false,
-        legend: isMobile
-            ? { position: 'bottom', textStyle: { fontSize: 12 } }
-            : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
-        pieSliceText: isMobile ? 'percentage' : 'none',
-        colors: chartColors,
-        chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
-        tooltip: { trigger: 'focus' }
+            pieHole: 0.4, is3D: false,
+            legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
+            pieSliceText: isMobile ? 'percentage' : 'none',
+            colors: chartColors,
+            chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
+            tooltip: { trigger: 'focus' }
         };
-        const chart = new google.visualization.PieChart(
-        document.getElementById('consumptionChartContainer')
-        );
-        chart.draw(dt, options);
+        new google.visualization.PieChart(document.getElementById('consumptionChartContainer')).draw(dt, options);
     }
 
     function drawMonthlyChart(data) {
@@ -559,9 +541,7 @@
         dt.addColumn('string', '月份');
         dt.addColumn('number', '目標/對比'); 
         dt.addColumn('number', '實際來客');
-        
         dt.addRows(data.map(i => [i.month, i.target, i.visits]));
-        
         new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, {
             colors: ['#ff9900', '#4e73df'], 
             legend: { position: 'bottom' },
@@ -582,10 +562,7 @@
         new google.visualization.ComboChart(document.getElementById('weeklyChartContainer')).draw(dt, {
             title: `每週來客數 (基準線: ${thresholdValue})`,
             seriesType: 'bars',
-            series: { 
-                0: { color: '#1cc88a' },
-                1: { type: 'line', color: 'red', lineDashStyle: [4, 4], pointSize: 0, lineWidth: 2, visibleInLegend: true } 
-            },
+            series: { 0: { color: '#1cc88a' }, 1: { type: 'line', color: 'red', lineDashStyle: [4, 4], pointSize: 0, lineWidth: 2, visibleInLegend: true } },
             legend: { position: 'bottom' }, 
             vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
             hAxis: { slantedText: true, showTextEvery: 4, textStyle: { fontSize: 10 } },
