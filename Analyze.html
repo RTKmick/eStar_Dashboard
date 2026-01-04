@@ -94,10 +94,13 @@
         .stat-label { font-size: 0.9rem; opacity: 0.95; margin-bottom: 5px; font-weight: 500; }
         .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
 
-        .red-card { background: linear-gradient(135deg, #ff6b6b, #ee5253); }
-        .orange-card { background: linear-gradient(135deg, #feca57, #ff9f43); }
-        .blue-card { background: linear-gradient(135deg, #54a0ff, #2e86de); }
-        .green-card { background: linear-gradient(135deg, #1dd1a1, #10ac84); }
+        /* 顏色定義 */
+        .bg-danger { background-color: #dc3545 !important; }
+        .bg-warning { background-color: #ffc107 !important; color: #212529 !important; } /* 黃色字體改深色較易讀 */
+        .bg-primary { background-color: #0d6efd !important; }
+        .bg-success { background-color: #198754 !important; }
+        .bg-gray { background-color: #6c757d !important; } /* 灰色樣式 */
+        .text-white { color: white !important; }
 
         .google-visualization-table-table { font-size: 14px !important; }
         .vip-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
@@ -127,56 +130,46 @@
 
     <div class="dashboard-grid">
         
-<div class="mb-4" id="overview-panel">
-  <h5 class="fw-bold mb-3 text-secondary">即時營運概況 (Overview)</h5>
-  <div class="row g-3">
-    
-    <div class="col-6 col-lg-3">
-      <div class="card bg-danger text-white border-0 shadow-sm h-100">
-        <div class="card-body text-center p-3">
-          <div class="small fw-bold opacity-75">本日 (Today)</div>
-          <div class="display-6 fw-bold my-2" id="count-today">0</div>
-        </div>
-      </div>
-    </div>
+        <div class="mb-4" id="overview-panel" style="grid-column: 1 / -1;">
+            <h5 style="font-weight: bold; margin-bottom: 15px; color: #6c757d;">即時營運概況 (Overview)</h5>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+            
+                <div style="flex: 1 1 45%; min-width: 140px;">
+                    <div class="stat-card bg-danger">
+                        <div class="stat-label">本日 (Today)</div>
+                        <div class="stat-value" id="count-today">0</div>
+                    </div>
+                </div>
 
-    <div class="col-6 col-lg-3">
-      <div class="card bg-warning text-white border-0 shadow-sm h-100">
-        <div class="card-body text-center p-3">
-          <div class="small fw-bold opacity-75">本週 (Week)</div>
-          <div class="display-6 fw-bold my-2" id="count-week">0</div>
-        </div>
-      </div>
-    </div>
+                <div style="flex: 1 1 45%; min-width: 140px;">
+                    <div class="stat-card bg-warning text-white">
+                        <div class="stat-label">本週 (Week)</div>
+                        <div class="stat-value" id="count-week">0</div>
+                    </div>
+                </div>
 
-            <div class="col-6 col-lg-3">
-              <div class="card bg-primary text-white border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                  <div class="small fw-bold opacity-75">本月 (Month)</div>
-                  <div class="display-6 fw-bold my-2" id="count-month">0</div>
+                <div style="flex: 1 1 45%; min-width: 140px;">
+                    <div class="stat-card bg-primary">
+                        <div class="stat-label">本月 (Month)</div>
+                        <div class="stat-value" id="count-month">0</div>
+                    </div>
                 </div>
-              </div>
-            </div>
-        
-            <div class="col-6 col-lg-3">
-              <div class="card bg-success text-white border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                  <div class="small fw-bold opacity-75">年度 (Current Year)</div>
-                  <div class="display-6 fw-bold my-2" id="count-year">0</div>
+
+                <div style="flex: 1 1 45%; min-width: 140px;">
+                    <div class="stat-card bg-success">
+                        <div class="stat-label">年度 (Current Year)</div>
+                        <div class="stat-value" id="count-year">0</div>
+                    </div>
                 </div>
-              </div>
-            </div>
-        
-            <div class="col-12"> 
-              <div class="card bg-gray text-white border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                  <div class="small fw-bold opacity-75">年度 (2025)</div>
-                  <div class="display-6 fw-bold my-2" id="count-2025">Loading...</div>
+
+                <div style="flex: 1 1 100%;"> 
+                    <div class="stat-card bg-gray">
+                        <div class="stat-label">年度 (2025)</div>
+                        <div class="stat-value" id="count-2025">Loading...</div>
+                    </div>
                 </div>
-              </div>
+
             </div>
-        
-          </div>
         </div>
 
         <div class="chart-container">
@@ -239,478 +232,464 @@
     // ✅ 新寫法 (直接讀取設定檔)
     const GAS_API_URL = CONFIG.API_URL;
         
-        // --- GitHub 專用：API 呼叫核心 ---
-        function callApi(action, data = {}) {
-            return fetch(GAS_API_URL, {
-                method: "POST",
-                body: JSON.stringify({ action: action, data: data })
-            })
-            .then(res => {
-                // 1. 先檢查是否為 JSON 格式
-                const contentType = res.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    return res.json();
+    // --- GitHub 專用：API 呼叫核心 ---
+    function callApi(action, data = {}) {
+        return fetch(GAS_API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: action, data: data })
+        })
+        .then(res => {
+            // 1. 先檢查是否為 JSON 格式
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                return res.json();
+            } else {
+                // 如果 Google 回傳 HTML (通常是錯誤頁面)，手動拋出錯誤，避免白畫面
+                throw new Error("伺服器回應非 JSON 格式 (可能是維護中或後端忙碌)");
+            }
+        })
+        .then(result => {
+            if(result.error) throw new Error(result.error);
+            return result;
+        });
+    }
+    // ===============================================================
+
+    google.charts.load('current', {'packages':['corechart', 'calendar', 'table']});
+    google.charts.setOnLoadCallback(initDashboard);
+
+    let globalCachedData = null;
+    let autoRefreshTimer = null;
+    let globalRevenueData = null; 
+
+    function initDashboard() {
+        runDataFetch(); 
+        autoRefreshTimer = setInterval(runDataFetch, 3600000); 
+        updateHeaderTime();       
+        loadRevenueCharts();    
+    }
+
+    function loadRevenueCharts() {
+        console.log('1. 準備抓取營收資料...');          
+        callApi('getRevenueData')
+            .then(drawRevenueCharts)
+            .catch(err => console.error("營收資料讀取失敗", err));
+    }
+
+    function drawRevenueCharts(data) {
+        console.log('2. 營收資料已回傳:', data);
+
+        if (!data || !data.monthly || !data.annual) return;
+        globalRevenueData = data; // 快取起來
+
+        // --- 小工具：金額轉數字 ---
+        function parseMoney(value) {
+            if (!value) return 0;
+            if (typeof value === 'number') return value;
+            var cleanString = value.toString().replace(/[$,]/g, '');
+            return parseFloat(cleanString) || 0;
+        }
+        var currentYearStr = new Date().getFullYear().toString();
+
+        // A. 左圖 (Monthly Trend)
+        var mRaw = data.monthly;
+        if (mRaw.length > 1) {
+            var mRows = mRaw.slice(1); 
+            
+            var lineChartData = new google.visualization.DataTable();
+            lineChartData.addColumn('string', '月份'); 
+
+            var seriesConfig = {};
+            mRows.forEach(function(row, index) {
+                var yearStr = row[0].toString();
+                lineChartData.addColumn('number', yearStr);
+
+                var style = {};
+                var yearNum = parseInt(yearStr);
+                if (yearNum <= 2021) {
+                    style.lineDashStyle = [4, 4];
+                    style.lineWidth = 1;
+                    style.color = '#999999';
+                }
+                if (yearStr === currentYearStr) {
+                    style.lineWidth = 5;
+                }
+                seriesConfig[index] = style;
+            });
+
+            var monthlyChartRows = [];
+            for (var m = 1; m <= 12; m++) {
+                var rowData = [m + '月'];
+                mRows.forEach(function(yearRow) {
+                    var val = parseMoney(yearRow[m]); 
+                    rowData.push(val === 0 ? null : val); 
+                });
+                monthlyChartRows.push(rowData);
+            }
+            lineChartData.addRows(monthlyChartRows);
+
+            var lineOptions = {
+                series: seriesConfig,
+                legend: { position: 'bottom', maxLines: 3, textStyle: { fontSize: 11 } },
+                chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
+                focusTarget: 'category',
+                vAxis: { format: 'short' },
+                pointSize: 5
+            };
+            new google.visualization.LineChart(document.getElementById('monthlyRevenueChart'))
+                .draw(lineChartData, lineOptions);
+        }
+
+        // B. 右圖 (Annual Total)
+        var aRaw = data.annual;
+        if (aRaw.length > 1) {
+            var aRows = aRaw.slice(1); 
+            
+            var comboData = new google.visualization.DataTable();
+            comboData.addColumn('string', '年份');
+            comboData.addColumn('number', '總營收');
+            comboData.addColumn({type: 'string', role: 'style'});
+            comboData.addColumn({type: 'string', role: 'annotation'});
+            comboData.addColumn('number', '發放薪資');
+            comboData.addColumn('number', '含Joy薪資');
+
+            var processedRows = aRows.map(function(row) {
+                var yearStr = row[0].toString();
+                var yearNum = parseInt(yearStr); 
+                var revenue = parseMoney(row[1]);
+                var salary1 = parseMoney(row[2]);
+                var salary2 = parseMoney(row[3]);
+                
+                var label = (revenue / 10000).toFixed(1) + '萬';
+
+                var barStyle = '';
+                if (yearStr === currentYearStr) {
+                    barStyle = 'stroke-color: #36b9cc; stroke-width: 2; fill-color: #36b9cc; fill-opacity: 0.1';
+                } else if (yearStr === '2021') {
+                    barStyle = 'color: #e74a3b; opacity: 1';
+                } else if (yearNum >= 2017 && yearNum <= 2020) {
+                    barStyle = 'color: #999999; opacity: 1';
                 } else {
-                    // 如果 Google 回傳 HTML (通常是錯誤頁面)，手動拋出錯誤，避免白畫面
-                    throw new Error("伺服器回應非 JSON 格式 (可能是維護中或後端忙碌)");
+                    barStyle = 'color: #36b9cc; opacity: 1';
                 }
-            })
-            .then(result => {
-                if(result.error) throw new Error(result.error);
-                return result;
+
+                return [yearStr, revenue, barStyle, label, salary1, salary2];
             });
+            comboData.addRows(processedRows);
+
+            var comboOptions = {
+                seriesType: 'bars',
+                series: {
+                    0: { type: 'bars' }, 
+                    1: { type: 'line', color: '#f6c23e', pointSize: 5, lineWidth: 3 }, 
+                    2: { type: 'line', color: '#00008b', pointSize: 5, lineWidth: 3 }  
+                },
+                legend: { position: 'bottom', textStyle: { fontSize: 11 } },
+                chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
+                vAxis: { format: 'short' },
+                bar: { groupWidth: '60%' },
+                annotations: { alwaysOutside: true, textStyle: { fontSize: 12, color: '#666', bold: true } },
+            };
+            new google.visualization.ComboChart(document.getElementById('annualRevenueChart'))
+                .draw(comboData, comboOptions);
         }
-        // ===============================================================
+    }
 
-        google.charts.load('current', {'packages':['corechart', 'calendar', 'table']});
-        google.charts.setOnLoadCallback(initDashboard);
+    document.getElementById('btnRefresh').addEventListener('click', function() {
+        document.getElementById('iconRefresh').classList.add('spin-anim');
+        runDataFetch();
+    });
 
-        let globalCachedData = null;
-        let autoRefreshTimer = null;
-        let globalRevenueData = null; 
-
-        function initDashboard() {
-            runDataFetch(); 
-            autoRefreshTimer = setInterval(runDataFetch, 3600000); 
-            updateHeaderTime();       
-            loadRevenueCharts();    
-        }
-
-        // --- 修改點 1：改用 callApi 呼叫營收資料 ---
-        function loadRevenueCharts() {
-            console.log('1. 準備抓取營收資料...');          
-            callApi('getRevenueData')
-                .then(drawRevenueCharts)
-                .catch(err => console.error("營收資料讀取失敗", err));
-        }
-
-        function drawRevenueCharts(data) {
-            console.log('2. 營收資料已回傳:', data);
-
-            if (!data || !data.monthly || !data.annual) return;
-            globalRevenueData = data; // 快取起來
-
-            // --- 小工具：金額轉數字 ---
-            function parseMoney(value) {
-                if (!value) return 0;
-                if (typeof value === 'number') return value;
-                var cleanString = value.toString().replace(/[$,]/g, '');
-                return parseFloat(cleanString) || 0;
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (globalCachedData) {
+                drawAllCharts(globalCachedData);
             }
-            var currentYearStr = new Date().getFullYear().toString();
+            if (globalRevenueData) {
+                drawRevenueCharts(globalRevenueData);
+            }                
+        }, 200);
+    });
 
-            // A. 左圖 (Monthly Trend)
-            var mRaw = data.monthly;
-            if (mRaw.length > 1) {
-                var mRows = mRaw.slice(1); 
-                
-                var lineChartData = new google.visualization.DataTable();
-                lineChartData.addColumn('string', '月份'); 
+    function runDataFetch() {
+        console.log('開始更新數據...');
+        callApi('getAnalysisData')
+            .then(onDataSuccess)
+            .catch(onDataFailure);
+    }
 
-                var seriesConfig = {};
-                mRows.forEach(function(row, index) {
-                    var yearStr = row[0].toString();
-                    lineChartData.addColumn('number', yearStr);
+    function onDataSuccess(data) {
+        document.getElementById('iconRefresh').classList.remove('spin-anim');
+        if (data.error) { onDataFailure(new Error(data.error)); return; }
+        globalCachedData = data;
+        drawAllCharts(data);
+        updateHeaderTime(); 
+    }
 
-                    var style = {};
-                    var yearNum = parseInt(yearStr);
-                    if (yearNum <= 2021) {
-                        style.lineDashStyle = [4, 4];
-                        style.lineWidth = 1;
-                        style.color = '#999999';
-                    }
-                    if (yearStr === currentYearStr) {
-                        style.lineWidth = 5;
-                    }
-                    seriesConfig[index] = style;
-                });
+    function onDataFailure(error) {
+        document.getElementById('iconRefresh').classList.remove('spin-anim');
+        console.warn('更新失敗，請檢查網路連線。', error);
+    }
 
-                var monthlyChartRows = [];
-                for (var m = 1; m <= 12; m++) {
-                    var rowData = [m + '月'];
-                    mRows.forEach(function(yearRow) {
-                        var val = parseMoney(yearRow[m]); 
-                        rowData.push(val === 0 ? null : val); 
-                    });
-                    monthlyChartRows.push(rowData);
-                }
-                lineChartData.addRows(monthlyChartRows);
+    function updateHeaderTime() {
+        const now = new Date();
+        const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                        now.getMinutes().toString().padStart(2, '0');
+        const dateStr = now.getFullYear() + '/' + 
+                        String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+                        String(now.getDate()).padStart(2, '0') + ' ' + timeStr;
+        document.getElementById('headerDate').textContent = dateStr;
+    }
 
-                var lineOptions = {
-                    series: seriesConfig,
-                    legend: { position: 'bottom', maxLines: 3, textStyle: { fontSize: 11 } },
-                    chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
-                    focusTarget: 'category',
-                    vAxis: { format: 'short' },
-                    pointSize: 5
-                };
-                new google.visualization.LineChart(document.getElementById('monthlyRevenueChart'))
-                    .draw(lineChartData, lineOptions);
-            }
-
-            // B. 右圖 (Annual Total)
-            var aRaw = data.annual;
-            if (aRaw.length > 1) {
-                var aRows = aRaw.slice(1); 
-                
-                var comboData = new google.visualization.DataTable();
-                comboData.addColumn('string', '年份');
-                comboData.addColumn('number', '總營收');
-                comboData.addColumn({type: 'string', role: 'style'});
-                comboData.addColumn({type: 'string', role: 'annotation'});
-                comboData.addColumn('number', '發放薪資');
-                comboData.addColumn('number', '含Joy薪資');
-
-                var processedRows = aRows.map(function(row) {
-                    var yearStr = row[0].toString();
-                    var yearNum = parseInt(yearStr); 
-                    var revenue = parseMoney(row[1]);
-                    var salary1 = parseMoney(row[2]);
-                    var salary2 = parseMoney(row[3]);
-                    
-                    var label = (revenue / 10000).toFixed(1) + '萬';
-
-                    var barStyle = '';
-                    if (yearStr === currentYearStr) {
-                        barStyle = 'stroke-color: #36b9cc; stroke-width: 2; fill-color: #36b9cc; fill-opacity: 0.1';
-                    } else if (yearStr === '2021') {
-                        barStyle = 'color: #e74a3b; opacity: 1';
-                    } else if (yearNum >= 2017 && yearNum <= 2020) {
-                        barStyle = 'color: #999999; opacity: 1';
-                    } else {
-                        barStyle = 'color: #36b9cc; opacity: 1';
-                    }
-
-                    return [yearStr, revenue, barStyle, label, salary1, salary2];
-                });
-                comboData.addRows(processedRows);
-
-                var comboOptions = {
-                    seriesType: 'bars',
-                    series: {
-                        0: { type: 'bars' }, 
-                        1: { type: 'line', color: '#f6c23e', pointSize: 5, lineWidth: 3 }, 
-                        2: { type: 'line', color: '#00008b', pointSize: 5, lineWidth: 3 }  
-                    },
-                    legend: { position: 'bottom', textStyle: { fontSize: 11 } },
-                    chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
-                    vAxis: { format: 'short' },
-                    bar: { groupWidth: '60%' },
-                    annotations: { alwaysOutside: true, textStyle: { fontSize: 12, color: '#666', bold: true } },
-                };
-                new google.visualization.ComboChart(document.getElementById('annualRevenueChart'))
-                    .draw(comboData, comboOptions);
-            }
-        }
-
-        document.getElementById('btnRefresh').addEventListener('click', function() {
-            document.getElementById('iconRefresh').classList.add('spin-anim');
-            runDataFetch();
-        });
-
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                if (globalCachedData) {
-                    drawAllCharts(globalCachedData);
-                }
-                if (globalRevenueData) {
-                    drawRevenueCharts(globalRevenueData);
-                }                
-            }, 200);
-        });
-
-        // --- 修改點 2：改用 callApi 呼叫分析數據 ---
-        function runDataFetch() {
-            console.log('開始更新數據...');
-            callApi('getAnalysisData')
-                .then(onDataSuccess)
-                .catch(onDataFailure);
-        }
-
-        function onDataSuccess(data) {
-            document.getElementById('iconRefresh').classList.remove('spin-anim');
-            if (data.error) { onDataFailure(new Error(data.error)); return; }
-            globalCachedData = data;
-            drawAllCharts(data);
-            updateHeaderTime(); 
-        }
-
-        function onDataFailure(error) {
-            document.getElementById('iconRefresh').classList.remove('spin-anim');
-            console.warn('更新失敗，請檢查網路連線。', error);
-        }
-
-        function updateHeaderTime() {
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
-                            now.getMinutes().toString().padStart(2, '0');
-            const dateStr = now.getFullYear() + '/' + 
-                            String(now.getMonth() + 1).padStart(2, '0') + '/' + 
-                            String(now.getDate()).padStart(2, '0') + ' ' + timeStr;
-            document.getElementById('headerDate').textContent = dateStr;
-        }
-
-        // 🆕 新增：負責更新上方 5 個方塊數字的函式
-        function updateOverview(data) {
-            // 從 data.summary 中取得各個數值，若無則預設為 0
-            var todayVal = (data.summary && data.summary.today) ? data.summary.today.count : 0;
-            var weekVal = (data.summary && data.summary.week) ? data.summary.week.count : 0;
-            var monthVal = (data.summary && data.summary.month) ? data.summary.month.count : 0;
-            var yearVal = (data.summary && data.summary.year) ? data.summary.year.count : 0;
-            
-            // 取得 2025 年數據 (後端傳來的 data.year2025)，若無則顯示 0
-            var year2025Val = (data.year2025) ? data.year2025 : 0;
-
-            // 執行數字跳動動畫 (從 0 跳到 目標值)
-            animateValue("count-today", 0, todayVal, 1000);
-            animateValue("count-week", 0, weekVal, 1000);
-            animateValue("count-month", 0, monthVal, 1000);
-            animateValue("count-year", 0, yearVal, 1000);
-            animateValue("count-2025", 0, year2025Val, 1000);
-        }
-
-        // 🆕 新增：數字跳動動畫函式
-        function animateValue(id, start, end, duration) {
-            var obj = document.getElementById(id);
-            if (!obj) return;
-            var range = end - start;
-            var minTimer = 50;
-            var stepTime = Math.abs(Math.floor(duration / range));
-            stepTime = Math.max(stepTime, minTimer);
-            var startTime = new Date().getTime();
-            var endTime = startTime + duration;
-            var timer;
-          
-            function run() {
-                var now = new Date().getTime();
-                var remaining = Math.max((endTime - now) / duration, 0);
-                var value = Math.round(end - (remaining * range));
-                obj.innerHTML = value;
-                if (value == end) {
-                    clearInterval(timer);
-                }
-            }
-            
-            timer = setInterval(run, stepTime);
-            run();
-        }
-
+    // 🆕 數字跳動動畫函式 (補回)
+    function animateValue(id, start, end, duration) {
+        var obj = document.getElementById(id);
+        if (!obj) return;
+        var range = end - start;
+        var minTimer = 50;
+        var stepTime = Math.abs(Math.floor(duration / range));
+        stepTime = Math.max(stepTime, minTimer);
+        var startTime = new Date().getTime();
+        var endTime = startTime + duration;
+        var timer;
         
-        function drawAllCharts(data) {
-            updateOverview(data);
-            if (data.summary) {
-                document.getElementById('val-today').textContent = data.summary.today.count;
-                document.getElementById('val-week').textContent = data.summary.week.count;
-                document.getElementById('val-month').textContent = data.summary.month.count;
-                document.getElementById('val-year').textContent = data.summary.year.count;
-                document.getElementById('lbl-today').textContent = data.summary.today.label;
-                document.getElementById('lbl-week').textContent = data.summary.week.label;
-                document.getElementById('lbl-month').textContent = data.summary.month.label;
-                document.getElementById('lbl-year').textContent = data.summary.year.label;
+        function run() {
+            var now = new Date().getTime();
+            var remaining = Math.max((endTime - now) / duration, 0);
+            var value = Math.round(end - (remaining * range));
+            obj.innerHTML = value;
+            if (value == end) {
+                clearInterval(timer);
             }
-            if (data.paymentTypes) drawPaymentChart(data.paymentTypes);
-            if (data.consumptionTypes) drawConsumptionChart(data.consumptionTypes);
-            if (data.monthlyVisits) drawMonthlyChart(data.monthlyVisits);
-            if (data.weeklyVisits) drawWeeklyChart(data.weeklyVisits, data.weeklyTarget);
-            if (data.calendarData) drawCalendarChart(data.calendarData);
-            if (data.topCustomers) drawTop50Chart(data.topCustomers);
         }
+        
+        timer = setInterval(run, stepTime);
+        run();
+    }
 
-        function drawPaymentChart(data) {
-            const total = data.reduce((sum, item) => sum + item.count, 0);
-            const dt = new google.visualization.DataTable();
-            dt.addColumn('string', '類型');
-            dt.addColumn('number', '次數');
-            const isMobile = window.innerWidth < 600;
-            const rows = data.map(i => {
-                const percent = total > 0 ? (i.count / total * 100).toFixed(1) : 0;
-                return [isMobile ? i.label : `${i.label} ${percent}%`, i.count]; 
-            });
-            dt.addRows(rows);
-            new google.visualization.PieChart(document.getElementById('paymentChartContainer')).draw(dt, {
-                pieHole: 0.5, is3D: false,
-                legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
-                pieSliceText: isMobile ? 'percentage' : 'none',
-                colors: ['#4e73df', '#e74a3b', '#f6c23e', '#36b9cc'], 
-                chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
-                tooltip: { trigger: 'focus' }
-            });
-        }
+    // 🆕 更新概況數據函式 (補回)
+    function updateOverview(data) {
+        // 從 data.summary 中取得各個數值，若無則預設為 0
+        var todayVal = (data.summary && data.summary.today) ? data.summary.today.count : 0;
+        var weekVal = (data.summary && data.summary.week) ? data.summary.week.count : 0;
+        var monthVal = (data.summary && data.summary.month) ? data.summary.month.count : 0;
+        var yearVal = (data.summary && data.summary.year) ? data.summary.year.count : 0;
+        
+        // 取得 2025 年數據 (後端傳來的 data.year2025)，若無則顯示 0
+        var year2025Val = (data.year2025) ? data.year2025 : 0;
 
-        function drawConsumptionChart(data) {
-          const total = data.reduce((sum, item) => sum + item.count, 0);
-          const dt = new google.visualization.DataTable();
-          dt.addColumn('string', '類型');
-          dt.addColumn('number', '加權次數');
-          const isMobile = window.innerWidth < 600;
-          const colorMap = {
-            '儲值卡Card': '#673AB7',   
-            '現金付款Cash': '#4CAF50', 
-            '電子支付E-pay': '#03A9F4' 
-          };
-          const chartColors = [];
-          const rows = data.map(i => {
-            chartColors.push(colorMap[i.label] || '#9E9E9E');
-            return [i.label, i.count];
-          });
-          dt.addRows(rows);
-          const options = {
-            pieHole: 0.4, is3D: false,
-            legend: isMobile
-              ? { position: 'bottom', textStyle: { fontSize: 12 } }
-              : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
+        // 執行數字跳動動畫 (從 0 跳到 目標值)
+        animateValue("count-today", 0, todayVal, 1000);
+        animateValue("count-week", 0, weekVal, 1000);
+        animateValue("count-month", 0, monthVal, 1000);
+        animateValue("count-year", 0, yearVal, 1000);
+        animateValue("count-2025", 0, year2025Val, 1000);
+    }
+
+    function drawAllCharts(data) {
+        // 呼叫 updateOverview 來更新上方方塊
+        updateOverview(data);
+
+        if (data.paymentTypes) drawPaymentChart(data.paymentTypes);
+        if (data.consumptionTypes) drawConsumptionChart(data.consumptionTypes);
+        if (data.monthlyVisits) drawMonthlyChart(data.monthlyVisits);
+        if (data.weeklyVisits) drawWeeklyChart(data.weeklyVisits, data.weeklyTarget);
+        if (data.calendarData) drawCalendarChart(data.calendarData);
+        if (data.topCustomers) drawTop50Chart(data.topCustomers);
+    }
+
+    function drawPaymentChart(data) {
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', '類型');
+        dt.addColumn('number', '次數');
+        const isMobile = window.innerWidth < 600;
+        const rows = data.map(i => {
+            const percent = total > 0 ? (i.count / total * 100).toFixed(1) : 0;
+            return [isMobile ? i.label : `${i.label} ${percent}%`, i.count]; 
+        });
+        dt.addRows(rows);
+        new google.visualization.PieChart(document.getElementById('paymentChartContainer')).draw(dt, {
+            pieHole: 0.5, is3D: false,
+            legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
             pieSliceText: isMobile ? 'percentage' : 'none',
-            colors: chartColors,
+            colors: ['#4e73df', '#e74a3b', '#f6c23e', '#36b9cc'], 
             chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
             tooltip: { trigger: 'focus' }
-          };
-          const chart = new google.visualization.PieChart(
-            document.getElementById('consumptionChartContainer')
-          );
-          chart.draw(dt, options);
-        }
+        });
+    }
 
-        function drawMonthlyChart(data) {
+    function drawConsumptionChart(data) {
+        const total = data.reduce((sum, item) => sum + item.count, 0);
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', '類型');
+        dt.addColumn('number', '加權次數');
+        const isMobile = window.innerWidth < 600;
+        const colorMap = {
+        '儲值卡Card': '#673AB7',   
+        '現金付款Cash': '#4CAF50', 
+        '電子支付E-pay': '#03A9F4' 
+        };
+        const chartColors = [];
+        const rows = data.map(i => {
+        chartColors.push(colorMap[i.label] || '#9E9E9E');
+        return [i.label, i.count];
+        });
+        dt.addRows(rows);
+        const options = {
+        pieHole: 0.4, is3D: false,
+        legend: isMobile
+            ? { position: 'bottom', textStyle: { fontSize: 12 } }
+            : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
+        pieSliceText: isMobile ? 'percentage' : 'none',
+        colors: chartColors,
+        chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
+        tooltip: { trigger: 'focus' }
+        };
+        const chart = new google.visualization.PieChart(
+        document.getElementById('consumptionChartContainer')
+        );
+        chart.draw(dt, options);
+    }
+
+    function drawMonthlyChart(data) {
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', '月份');
+        dt.addColumn('number', '目標/對比'); 
+        dt.addColumn('number', '實際來客');
+        
+        dt.addRows(data.map(i => [i.month, i.target, i.visits]));
+        
+        new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, {
+            colors: ['#ff9900', '#4e73df'], 
+            legend: { position: 'bottom' },
+            vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
+            chartArea: { left: 50, top: 30, width: '100%', height: '70%' },
+            animation: { startup: true, duration: 1000, easing: 'out' },
+            bar: { groupWidth: '75%' }
+        });
+    }
+
+    function drawWeeklyChart(data, customTarget) {
+        const thresholdValue = customTarget || 130;
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', '週次');
+        dt.addColumn('number', '來客數');
+        dt.addColumn('number', '達標線');
+        dt.addRows(data.map(i => [i.week, i.visits, thresholdValue]));
+        new google.visualization.ComboChart(document.getElementById('weeklyChartContainer')).draw(dt, {
+            title: `每週來客數 (基準線: ${thresholdValue})`,
+            seriesType: 'bars',
+            series: { 
+                0: { color: '#1cc88a' },
+                1: { type: 'line', color: 'red', lineDashStyle: [4, 4], pointSize: 0, lineWidth: 2, visibleInLegend: true } 
+            },
+            legend: { position: 'bottom' }, 
+            vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
+            hAxis: { slantedText: true, showTextEvery: 4, textStyle: { fontSize: 10 } },
+            chartArea: { left: 50, top: 30, width: '100%', height: '70%' },
+            animation: { startup: true, duration: 1000, easing: 'out' }
+        });
+    }
+
+    function drawCalendarChart(data) {
+        const mainContainer = document.getElementById('calendarChartContainer');
+        mainContainer.innerHTML = ''; 
+        let globalMaxCount = 0;
+        data.forEach(d => { if (d.count > globalMaxCount) globalMaxCount = d.count; });
+        const dataByYear = {};
+        data.forEach(item => { if (!dataByYear[item.y]) dataByYear[item.y] = []; dataByYear[item.y].push(item); });
+        const years = Object.keys(dataByYear).sort();
+        const containerWidth = Math.max(mainContainer.offsetWidth, 900); 
+        let autoCellSize = (containerWidth - 50) / 53;
+        if (autoCellSize < 16) autoCellSize = 16;
+        if (autoCellSize > 25) autoCellSize = 25;
+        years.forEach((year, index) => {
+            const yearDiv = document.createElement('div');
+            yearDiv.style.width = containerWidth + 'px';
+            yearDiv.style.height = (autoCellSize * 9 + 40) + 'px';
+            mainContainer.appendChild(yearDiv);
+            const yearData = dataByYear[year];
             const dt = new google.visualization.DataTable();
-            dt.addColumn('string', '月份');
-            // 修改順序：先加入目標，再加入實際
-            dt.addColumn('number', '目標/對比'); 
-            dt.addColumn('number', '實際來客');
-            
-            // 資料加入順序也要對應調整：[月份, 目標, 實際]
-            dt.addRows(data.map(i => [i.month, i.target, i.visits]));
-            
-            new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, {
-                // 顏色建議調整：第一色給目標(橘色)，第二色給實際(藍色)
-                colors: ['#ff9900', '#4e73df'], 
-                legend: { position: 'bottom' },
-                vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
-                chartArea: { left: 50, top: 30, width: '100%', height: '70%' },
-                animation: { startup: true, duration: 1000, easing: 'out' },
-                bar: { groupWidth: '75%' }
-            });
-        }
-
-        function drawWeeklyChart(data, customTarget) {
-            const thresholdValue = customTarget || 130;
-            const dt = new google.visualization.DataTable();
-            dt.addColumn('string', '週次');
-            dt.addColumn('number', '來客數');
-            dt.addColumn('number', '達標線');
-            dt.addRows(data.map(i => [i.week, i.visits, thresholdValue]));
-            new google.visualization.ComboChart(document.getElementById('weeklyChartContainer')).draw(dt, {
-                title: `每週來客數 (基準線: ${thresholdValue})`,
-                seriesType: 'bars',
-                series: { 
-                    0: { color: '#1cc88a' },
-                    1: { type: 'line', color: 'red', lineDashStyle: [4, 4], pointSize: 0, lineWidth: 2, visibleInLegend: true } 
-                },
-                legend: { position: 'bottom' }, 
-                vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
-                hAxis: { slantedText: true, showTextEvery: 4, textStyle: { fontSize: 10 } },
-                chartArea: { left: 50, top: 30, width: '100%', height: '70%' },
-                animation: { startup: true, duration: 1000, easing: 'out' }
-            });
-        }
-
-        function drawCalendarChart(data) {
-            const mainContainer = document.getElementById('calendarChartContainer');
-            mainContainer.innerHTML = ''; 
-            let globalMaxCount = 0;
-            data.forEach(d => { if (d.count > globalMaxCount) globalMaxCount = d.count; });
-            const dataByYear = {};
-            data.forEach(item => { if (!dataByYear[item.y]) dataByYear[item.y] = []; dataByYear[item.y].push(item); });
-            const years = Object.keys(dataByYear).sort();
-            const containerWidth = Math.max(mainContainer.offsetWidth, 900); 
-            let autoCellSize = (containerWidth - 50) / 53;
-            if (autoCellSize < 16) autoCellSize = 16;
-            if (autoCellSize > 25) autoCellSize = 25;
-            years.forEach((year, index) => {
-                const yearDiv = document.createElement('div');
-                yearDiv.style.width = containerWidth + 'px';
-                yearDiv.style.height = (autoCellSize * 9 + 40) + 'px';
-                mainContainer.appendChild(yearDiv);
-                const yearData = dataByYear[year];
-                const dt = new google.visualization.DataTable();
-                dt.addColumn({ type: 'date', id: 'Date' });
-                dt.addColumn({ type: 'number', id: 'Visits' });
-                const rows = yearData.map(i => [new Date(i.y, i.m, i.d), i.count]);
-                dt.addRows(rows);
-                const chart = new google.visualization.Calendar(yearDiv);
-                if (index === years.length - 1) {
-                    google.visualization.events.addListener(chart, 'ready', function () {
-                        if (mainContainer.scrollWidth > mainContainer.clientWidth) {
-                            const now = new Date();
-                            const start = new Date(now.getFullYear(), 0, 0);
-                            const currentWeek = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
-                            let targetWeek = currentWeek - 5;
-                            if (targetWeek < 0) targetWeek = 0; 
-                            mainContainer.scrollTo({ left: (targetWeek / 53) * mainContainer.scrollWidth, behavior: 'smooth' });
-                        }
-                    });
-                }
-                chart.draw(dt, {
-                    height: (autoCellSize * 9) + 40, width: containerWidth,
-                    calendar: {
-                        cellSize: autoCellSize, cellColor: { stroke: '#fff', strokeOpacity: 0.5, strokeWidth: 1 },
-                        monthLabel: { fontName: 'Arial', fontSize: 12, color: '#555', bold: true },
-                        yearLabel: { fontName: 'Arial', fontSize: 32, color: '#E0E0E0', bold: true },
-                        dayOfWeekLabel: { fontName: 'Arial', fontSize: 10, color: '#888' }
-                    },
-                    colorAxis: { colors: ['#e3e6f0', '#2c9faf'], maxValue: globalMaxCount }, 
-                    noDataPattern: { backgroundColor: '#f8f9fc', color: '#f8f9fc' }
-                });
-            });
-        }
-
-        function drawTop50Chart(data) {
-            const top50 = data.slice(0, 50);
-            const globalMax = top50.length > 0 ? top50[0].visits : 1;
-            renderVIPList('vipLeftContainer', top50.slice(0, 25), 1, globalMax);
-            renderVIPList('vipRightContainer', top50.slice(25, 50), 26, globalMax);
-        }
-
-        function renderVIPList(containerId, dataList, startIndex, maxVisits) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const colors = [
-                { border: '#2ea043', bg: 'rgba(46, 160, 67, 0.15)' }, { border: '#f1c40f', bg: 'rgba(241, 196, 15, 0.15)' },
-                { border: '#8e44ad', bg: 'rgba(142, 68, 173, 0.15)' }, { border: '#2980b9', bg: 'rgba(41, 128, 185, 0.15)' },
-                { border: '#e74c3c', bg: 'rgba(231, 76, 60, 0.15)' }, { border: '#e67e22', bg: 'rgba(230, 126, 34, 0.15)' }
-            ];
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            let html = '<div>';
-            if (dataList.length === 0) { html += '<p style="text-align:center; color:#999; margin-top:20px;">尚無更多資料</p>'; } 
-            else {
-                dataList.forEach((item, index) => {
-                    const rank = startIndex + index;
-                    const colorObj = colors[(rank - 1) % colors.length];
-                    const widthPercent = (item.visits / maxVisits) * 100;
-                    let daysText = "--";
-                    if (item.lastVisit) {
-                        const lastDate = new Date(item.lastVisit); lastDate.setHours(0, 0, 0, 0);
-                        const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-                        daysText = (diffDays < 0 ? 0 : diffDays) + " 天";
+            dt.addColumn({ type: 'date', id: 'Date' });
+            dt.addColumn({ type: 'number', id: 'Visits' });
+            const rows = yearData.map(i => [new Date(i.y, i.m, i.d), i.count]);
+            dt.addRows(rows);
+            const chart = new google.visualization.Calendar(yearDiv);
+            if (index === years.length - 1) {
+                google.visualization.events.addListener(chart, 'ready', function () {
+                    if (mainContainer.scrollWidth > mainContainer.clientWidth) {
+                        const now = new Date();
+                        const start = new Date(now.getFullYear(), 0, 0);
+                        const currentWeek = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
+                        let targetWeek = currentWeek - 5;
+                        if (targetWeek < 0) targetWeek = 0; 
+                        mainContainer.scrollTo({ left: (targetWeek / 53) * mainContainer.scrollWidth, behavior: 'smooth' });
                     }
-                    html += `
-                    <div style="display: flex; align-items: center; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif;">
-                        <div style="width: 25px; text-align: center; font-weight: bold; color: #888; font-size: 13px;">${rank}</div>
-                        <div style="flex: 1; position: relative; height: 36px; margin-left: 5px; border: 2px solid ${colorObj.border}; border-radius: 18px; background-color: #fff; overflow: hidden; display: flex; align-items: center;">
-                            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: ${widthPercent}%; background-color: ${colorObj.bg}; z-index: 0;"></div>
-                            <div style="position: relative; z-index: 1; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; font-weight: 600; color: #444;">
-                                <span class="vip-name">${item.name}</span>
-                                <span style="font-size: 13px; font-weight: bold;">${item.visits}</span>
-                            </div>
-                        </div>
-                        <div style="width: 40px; text-align: right; font-weight: bold; color: #666; font-size: 12px; margin-left: 5px;">${daysText}</div>
-                    </div>`;
                 });
             }
-            html += '</div>';
-            container.innerHTML = html;
+            chart.draw(dt, {
+                height: (autoCellSize * 9) + 40, width: containerWidth,
+                calendar: {
+                    cellSize: autoCellSize, cellColor: { stroke: '#fff', strokeOpacity: 0.5, strokeWidth: 1 },
+                    monthLabel: { fontName: 'Arial', fontSize: 12, color: '#555', bold: true },
+                    yearLabel: { fontName: 'Arial', fontSize: 32, color: '#E0E0E0', bold: true },
+                    dayOfWeekLabel: { fontName: 'Arial', fontSize: 10, color: '#888' }
+                },
+                colorAxis: { colors: ['#e3e6f0', '#2c9faf'], maxValue: globalMaxCount }, 
+                noDataPattern: { backgroundColor: '#f8f9fc', color: '#f8f9fc' }
+            });
+        });
+    }
+
+    function drawTop50Chart(data) {
+        const top50 = data.slice(0, 50);
+        const globalMax = top50.length > 0 ? top50[0].visits : 1;
+        renderVIPList('vipLeftContainer', top50.slice(0, 25), 1, globalMax);
+        renderVIPList('vipRightContainer', top50.slice(25, 50), 26, globalMax);
+    }
+
+    function renderVIPList(containerId, dataList, startIndex, maxVisits) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const colors = [
+            { border: '#2ea043', bg: 'rgba(46, 160, 67, 0.15)' }, { border: '#f1c40f', bg: 'rgba(241, 196, 15, 0.15)' },
+            { border: '#8e44ad', bg: 'rgba(142, 68, 173, 0.15)' }, { border: '#2980b9', bg: 'rgba(41, 128, 185, 0.15)' },
+            { border: '#e74c3c', bg: 'rgba(231, 76, 60, 0.15)' }, { border: '#e67e22', bg: 'rgba(230, 126, 34, 0.15)' }
+        ];
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        let html = '<div>';
+        if (dataList.length === 0) { html += '<p style="text-align:center; color:#999; margin-top:20px;">尚無更多資料</p>'; } 
+        else {
+            dataList.forEach((item, index) => {
+                const rank = startIndex + index;
+                const colorObj = colors[(rank - 1) % colors.length];
+                const widthPercent = (item.visits / maxVisits) * 100;
+                let daysText = "--";
+                if (item.lastVisit) {
+                    const lastDate = new Date(item.lastVisit); lastDate.setHours(0, 0, 0, 0);
+                    const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+                    daysText = (diffDays < 0 ? 0 : diffDays) + " 天";
+                }
+                html += `
+                <div style="display: flex; align-items: center; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif;">
+                    <div style="width: 25px; text-align: center; font-weight: bold; color: #888; font-size: 13px;">${rank}</div>
+                    <div style="flex: 1; position: relative; height: 36px; margin-left: 5px; border: 2px solid ${colorObj.border}; border-radius: 18px; background-color: #fff; overflow: hidden; display: flex; align-items: center;">
+                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: ${widthPercent}%; background-color: ${colorObj.bg}; z-index: 0;"></div>
+                        <div style="position: relative; z-index: 1; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; font-weight: 600; color: #444;">
+                            <span class="vip-name">${item.name}</span>
+                            <span style="font-size: 13px; font-weight: bold;">${item.visits}</span>
+                        </div>
+                    </div>
+                    <div style="width: 40px; text-align: right; font-weight: bold; color: #666; font-size: 12px; margin-left: 5px;">${daysText}</div>
+                </div>`;
+            });
         }
+        html += '</div>';
+        container.innerHTML = html;
+    }
     </script>
 </body>
 </html>
