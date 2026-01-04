@@ -127,26 +127,56 @@
 
     <div class="dashboard-grid">
         
-        <div class="chart-container">
-            <h2>即時營運概況 (Overview)</h2>
-            <div class="stats-grid">
-                <div class="stat-card red-card">
-                    <div class="stat-label">本日 (<span id="lbl-today">--/--</span>)</div>
-                    <div class="stat-value" id="val-today">...</div>
+<div class="mb-4" id="overview-panel">
+  <h5 class="fw-bold mb-3 text-secondary">即時營運概況 (Overview)</h5>
+  <div class="row g-3">
+    
+    <div class="col-6 col-lg-3">
+      <div class="card bg-danger text-white border-0 shadow-sm h-100">
+        <div class="card-body text-center p-3">
+          <div class="small fw-bold opacity-75">本日 (Today)</div>
+          <div class="display-6 fw-bold my-2" id="count-today">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card bg-warning text-white border-0 shadow-sm h-100">
+        <div class="card-body text-center p-3">
+          <div class="small fw-bold opacity-75">本週 (Week)</div>
+          <div class="display-6 fw-bold my-2" id="count-week">0</div>
+        </div>
+      </div>
+    </div>
+
+            <div class="col-6 col-lg-3">
+              <div class="card bg-primary text-white border-0 shadow-sm h-100">
+                <div class="card-body text-center p-3">
+                  <div class="small fw-bold opacity-75">本月 (Month)</div>
+                  <div class="display-6 fw-bold my-2" id="count-month">0</div>
                 </div>
-                <div class="stat-card orange-card">
-                    <div class="stat-label">本週 (<span id="lbl-week">W--</span>)</div>
-                    <div class="stat-value" id="val-week">...</div>
-                </div>
-                <div class="stat-card blue-card">
-                    <div class="stat-label">本月 (<span id="lbl-month">---</span>)</div>
-                    <div class="stat-value" id="val-month">...</div>
-                </div>
-                <div class="stat-card green-card">
-                    <div class="stat-label">年度 (<span id="lbl-year">----</span>)</div>
-                    <div class="stat-value" id="val-year">...</div>
-                </div>
+              </div>
             </div>
+        
+            <div class="col-6 col-lg-3">
+              <div class="card bg-success text-white border-0 shadow-sm h-100">
+                <div class="card-body text-center p-3">
+                  <div class="small fw-bold opacity-75">年度 (Current Year)</div>
+                  <div class="display-6 fw-bold my-2" id="count-year">0</div>
+                </div>
+              </div>
+            </div>
+        
+            <div class="col-12"> 
+              <div class="card bg-gray text-white border-0 shadow-sm h-100">
+                <div class="card-body text-center p-3">
+                  <div class="small fw-bold opacity-75">年度 (2025)</div>
+                  <div class="display-6 fw-bold my-2" id="count-2025">Loading...</div>
+                </div>
+              </div>
+            </div>
+        
+          </div>
         </div>
 
         <div class="chart-container">
@@ -422,7 +452,54 @@
             document.getElementById('headerDate').textContent = dateStr;
         }
 
+        // 🆕 新增：負責更新上方 5 個方塊數字的函式
+        function updateOverview(data) {
+            // 從 data.summary 中取得各個數值，若無則預設為 0
+            var todayVal = (data.summary && data.summary.today) ? data.summary.today.count : 0;
+            var weekVal = (data.summary && data.summary.week) ? data.summary.week.count : 0;
+            var monthVal = (data.summary && data.summary.month) ? data.summary.month.count : 0;
+            var yearVal = (data.summary && data.summary.year) ? data.summary.year.count : 0;
+            
+            // 取得 2025 年數據 (後端傳來的 data.year2025)，若無則顯示 0
+            var year2025Val = (data.year2025) ? data.year2025 : 0;
+
+            // 執行數字跳動動畫 (從 0 跳到 目標值)
+            animateValue("count-today", 0, todayVal, 1000);
+            animateValue("count-week", 0, weekVal, 1000);
+            animateValue("count-month", 0, monthVal, 1000);
+            animateValue("count-year", 0, yearVal, 1000);
+            animateValue("count-2025", 0, year2025Val, 1000);
+        }
+
+        // 🆕 新增：數字跳動動畫函式
+        function animateValue(id, start, end, duration) {
+            var obj = document.getElementById(id);
+            if (!obj) return;
+            var range = end - start;
+            var minTimer = 50;
+            var stepTime = Math.abs(Math.floor(duration / range));
+            stepTime = Math.max(stepTime, minTimer);
+            var startTime = new Date().getTime();
+            var endTime = startTime + duration;
+            var timer;
+          
+            function run() {
+                var now = new Date().getTime();
+                var remaining = Math.max((endTime - now) / duration, 0);
+                var value = Math.round(end - (remaining * range));
+                obj.innerHTML = value;
+                if (value == end) {
+                    clearInterval(timer);
+                }
+            }
+            
+            timer = setInterval(run, stepTime);
+            run();
+        }
+
+        
         function drawAllCharts(data) {
+            updateOverview(data);
             if (data.summary) {
                 document.getElementById('val-today').textContent = data.summary.today.count;
                 document.getElementById('val-week').textContent = data.summary.week.count;
