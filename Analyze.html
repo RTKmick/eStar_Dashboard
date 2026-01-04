@@ -388,7 +388,15 @@
                 },
                 legend: { position: 'bottom', textStyle: { fontSize: 11 } },
                 chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
-                vAxis: { format: 'short' },
+                
+                // 🆕 修改點：設定 Y 軸最大值為 3,500,000
+                vAxis: { 
+                    format: 'short',
+                    viewWindow: {
+                        max: 3500000  // 設定最高刻度為 3.5M
+                    }
+                },
+                
                 bar: { groupWidth: '60%' },
                 annotations: { alwaysOutside: true, textStyle: { fontSize: 12, color: '#666', bold: true } },
             };
