@@ -31,7 +31,7 @@
         
         #headerDate { margin-left: 15px; font-weight: normal; color: #555; font-size: 1.2rem; }
         
-        /* 統一所有區塊標題樣式 (包含 Overview) */
+        /* 統一所有區塊標題樣式 */
         h2 { font-size: 1.2rem; color: #555; margin-top: 0; font-weight: 600; margin-bottom: 15px; }
         
         /* --- 按鈕 --- */
@@ -53,7 +53,9 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
             padding: 15px; margin-bottom: 0; width: 100%; min-width: 0; 
             transition: transform 0.2s;
-            display: flex; flex-direction: column; /* 讓內容垂直排列 */
+            display: flex; 
+            flex-direction: column; /* 讓內容垂直排列 */
+            height: 100%; /* 關鍵：讓容器高度填滿 Grid 格子 */
         }
         @media (hover: hover) { .chart-container:hover { transform: translateY(-2px); } }
         
@@ -61,7 +63,8 @@
         .dashboard-grid { 
             display: grid; 
             grid-template-columns: 1fr; /* 手機單欄 */
-            gap: 20px; align-items: start; 
+            gap: 20px; 
+            /* 關鍵修改：移除 align-items: start，預設為 stretch (等高) */
         }
         
         @media (min-width: 768px) {
@@ -70,21 +73,21 @@
             .chart-container { padding: 20px; } 
         }
 
-        /* 電腦版：上方三個區塊並排 (Overview + 2個圓餅圖) */
+        /* 電腦版：上方三個區塊並排 */
         @media (min-width: 1200px) {
             .dashboard-grid { grid-template-columns: 1fr 1fr 1fr; }
         }
 
         /* --- 強制雙欄群組 --- */
         .split-row-group {
-            grid-column: 1 / -1; /* 強制佔滿整列 */
+            grid-column: 1 / -1; 
             display: grid;
-            grid-template-columns: 1fr; /* 手機單欄 */
+            grid-template-columns: 1fr; 
             gap: 20px;
         }
         @media (min-width: 768px) {
             .split-row-group {
-                grid-template-columns: 1fr 1fr; /* 平板以上永遠雙欄 */
+                grid-template-columns: 1fr 1fr; 
             }
         }
 
@@ -122,7 +125,8 @@
             #headerDate { display: block; font-size: 1rem; margin-left: 0 !important; margin-top: 5px; width: 100%; } 
             .refresh-btn { margin-left: 0; margin-top: 5px; }
             .stat-value { font-size: 1.6rem; } 
-            #paymentChartContainer, #consumptionChartContainer, #monthlyChartContainer, #weeklyChartContainer { height: 260px !important; }
+            /* 手機版圖表高度固定，避免過長或過短 */
+            #paymentChartContainer, #consumptionChartContainer, #monthlyChartContainer, #weeklyChartContainer { height: 260px !important; min-height: 260px !important; }
             #calendarChartContainer { overflow-x: auto; overflow-y: hidden; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 10px; }
             .full-width, .split-row-group { grid-column: auto !important; }
         }
@@ -179,12 +183,12 @@
 
         <div class="chart-container">
             <h2>付款類型 (By Person)</h2>
-            <div id="paymentChartContainer" style="height: 300px; flex: 1;"></div>
+            <div id="paymentChartContainer" style="flex: 1; min-height: 300px;"></div>
         </div>
 
         <div class="chart-container">
             <h2>消費貢獻度 (By Volume)</h2>
-            <div id="consumptionChartContainer" style="height: 300px; flex: 1;"></div>
+            <div id="consumptionChartContainer" style="flex: 1; min-height: 300px;"></div>
         </div>
 
         <div class="chart-container full-width">
