@@ -13,8 +13,9 @@
 
         body { 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #f4f7f9; 
-            color: #333; 
+            /* 改成深色背景 */
+            background-color: #0e1117; /* 深灰黑 */
+            color: #e6e6e6; /* 字體改淺灰 */
             padding: 20px; 
             margin: 0; 
             overscroll-behavior-y: contain; 
@@ -23,7 +24,8 @@
         /* --- 標題區域 --- */
         h1 { 
             display: flex; align-items: center; flex-wrap: wrap;
-            color: #007bff; border-bottom: 2px solid #ccc; 
+            /* 改成科技藍或螢光色，移除底部灰線改為深色線 */
+            color: #58a6ff; border-bottom: 2px solid #30363d;
             padding-bottom: 10px; margin-bottom: 20px; 
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1); 
             word-wrap: break-word; 
@@ -48,14 +50,16 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* --- 卡片容器 --- */
-        .chart-container { 
-            background-color: #fff; border-radius: 12px; 
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
-            padding: 15px; margin-bottom: 0; width: 100%; min-width: 0; 
-            transition: transform 0.2s;
-            display: flex; 
-            flex-direction: column; /* 讓內容垂直排列 */
-            height: 100%; /* 關鍵：讓容器高度填滿 Grid 格子 */
+        .chart-container {
+            /* 背景改半透明黑 */
+            background-color: rgba(22, 27, 34, 0.8); 
+            /* 加上微弱邊框 */
+            border: 1px solid #30363d;
+            /* 文字顏色 */
+            color: #ffffff;
+            /* 陰影改深色 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            /* ...其他保留 */
         }
         @media (hover: hover) { .chart-container:hover { transform: translateY(-2px); } }
         
@@ -102,6 +106,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .stat-label { font-size: 0.9rem; opacity: 0.95; margin-bottom: 5px; font-weight: 500; }
         .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
@@ -269,6 +274,21 @@
     let autoRefreshTimer = null;
     let globalRevenueData = null; 
 
+    // 定義深色主題的共用設定
+    const darkThemeOptions = {
+        backgroundColor: 'transparent', // 讓圖表背景透明，透出 CSS 的黑底
+        legend: { textStyle: { color: '#e6e6e6' } }, // 圖例文字變白
+        hAxis: { 
+            textStyle: { color: '#e6e6e6' },
+            gridlines: { color: '#30363d' } // 格線變深灰
+        },
+        vAxis: { 
+            textStyle: { color: '#e6e6e6' },
+            gridlines: { color: '#30363d' }
+        },
+        titleTextStyle: { color: '#e6e6e6' }
+    };
+        
     function initDashboard() {
         runDataFetch(); 
         autoRefreshTimer = setInterval(runDataFetch, 3600000); 
@@ -334,6 +354,7 @@
             lineChartData.addRows(monthlyChartRows);
 
             var lineOptions = {
+                ...darkThemeOptions, // <--- 補上這行
                 series: seriesConfig,
                 legend: { position: 'bottom', maxLines: 3, textStyle: { fontSize: 11 } },
                 chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
@@ -380,6 +401,7 @@
             comboData.addRows(processedRows);
 
             var comboOptions = {
+                ...darkThemeOptions, // <--- 補上這行
                 seriesType: 'bars',
                 series: {
                     0: { type: 'bars' }, 
@@ -518,6 +540,7 @@
         });
         dt.addRows(rows);
         new google.visualization.PieChart(document.getElementById('paymentChartContainer')).draw(dt, {
+            ...darkThemeOptions,
             pieHole: 0.5, is3D: false,
             legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
             pieSliceText: isMobile ? 'percentage' : 'none',
@@ -548,7 +571,8 @@
             chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
             tooltip: { trigger: 'focus' }
         };
-        new google.visualization.PieChart(document.getElementById('consumptionChartContainer')).draw(dt, options);
+        new google.visualization.PieChart(document.getElementById('consumptionChartContainer'))
+            .draw(dt, { ...darkThemeOptions, ...options });
     }
 
     function drawMonthlyChart(data) {
@@ -558,6 +582,7 @@
         dt.addColumn('number', '實際來客');
         dt.addRows(data.map(i => [i.month, i.target, i.visits]));
         new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, {
+            ...darkThemeOptions,  // <--- 補上這行
             colors: ['#ff9900', '#4e73df'], 
             legend: { position: 'bottom' },
             vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
@@ -575,6 +600,7 @@
         dt.addColumn('number', '達標線');
         dt.addRows(data.map(i => [i.week, i.visits, thresholdValue]));
         new google.visualization.ComboChart(document.getElementById('weeklyChartContainer')).draw(dt, {
+            ...darkThemeOptions,  // <--- 補上這行
             title: `每週來客數 (基準線: ${thresholdValue})`,
             seriesType: 'bars',
             series: { 0: { color: '#1cc88a' }, 1: { type: 'line', color: 'red', lineDashStyle: [4, 4], pointSize: 0, lineWidth: 2, visibleInLegend: true } },
@@ -625,13 +651,17 @@
             chart.draw(dt, {
                 height: (autoCellSize * 9) + 40, width: containerWidth,
                 calendar: {
-                    cellSize: autoCellSize, cellColor: { stroke: '#fff', strokeOpacity: 0.5, strokeWidth: 1 },
-                    monthLabel: { fontName: 'Arial', fontSize: 12, color: '#555', bold: true },
-                    yearLabel: { fontName: 'Arial', fontSize: 32, color: '#E0E0E0', bold: true },
-                    dayOfWeekLabel: { fontName: 'Arial', fontSize: 10, color: '#888' }
+                    cellSize: autoCellSize,
+                    // 空格顏色改成深色
+                    unusedMonthOutlineColor: { stroke: '#30363d', strokeOpacity: 0.8, strokeWidth: 1 },
+                    underYearSpaceColor: '#0e1117', 
+                    cellColor: { stroke: '#0e1117', strokeOpacity: 0.5, strokeWidth: 1 }, 
+                    monthLabel: { fontName: 'Arial', fontSize: 12, color: '#58a6ff', bold: true }, // 月份改亮藍
+                    yearLabel: { fontName: 'Arial', fontSize: 32, color: '#30363d', bold: true }, // 年份浮水印改深灰
+                    dayOfWeekLabel: { fontName: 'Arial', fontSize: 10, color: '#8b949e' }
                 },
-                colorAxis: { colors: ['#e3e6f0', '#2c9faf'], maxValue: globalMaxCount }, 
-                noDataPattern: { backgroundColor: '#f8f9fc', color: '#f8f9fc' }
+                // 無數據時的格子顏色
+                noDataPattern: { backgroundColor: '#161b22', color: '#161b22' }
             });
         });
     }
@@ -665,17 +695,20 @@
                     const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
                     daysText = (diffDays < 0 ? 0 : diffDays) + " 天";
                 }
+                // 修改後的 HTML 生成 (深色模式專用)
                 html += `
                 <div style="display: flex; align-items: center; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif;">
-                    <div style="width: 25px; text-align: center; font-weight: bold; color: #888; font-size: 13px;">${rank}</div>
-                    <div style="flex: 1; position: relative; height: 36px; margin-left: 5px; border: 2px solid ${colorObj.border}; border-radius: 18px; background-color: #fff; overflow: hidden; display: flex; align-items: center;">
+                    <div style="width: 25px; text-align: center; font-weight: bold; color: #aaa; font-size: 13px;">${rank}</div>
+                    
+                    <div style="flex: 1; position: relative; height: 36px; margin-left: 5px; border: 2px solid ${colorObj.border}; border-radius: 18px; background-color: rgba(255,255,255,0.05); overflow: hidden; display: flex; align-items: center;">
                         <div style="position: absolute; left: 0; top: 0; bottom: 0; width: ${widthPercent}%; background-color: ${colorObj.bg}; z-index: 0;"></div>
-                        <div style="position: relative; z-index: 1; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; font-weight: 600; color: #444;">
+                        <div style="position: relative; z-index: 1; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; font-weight: 600; color: #fff;">
                             <span class="vip-name">${item.name}</span>
                             <span style="font-size: 13px; font-weight: bold;">${item.visits}</span>
                         </div>
                     </div>
-                    <div style="width: 40px; text-align: right; font-weight: bold; color: #666; font-size: 12px; margin-left: 5px;">${daysText}</div>
+                    
+                    <div style="width: 40px; text-align: right; font-weight: bold; color: #aaa; font-size: 12px; margin-left: 5px;">${daysText}</div>
                 </div>`;
             });
         }
