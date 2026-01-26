@@ -2,7 +2,7 @@
 <html>
 <head>
     <base target="_top">
-    <title>數據分析儀表板 V1.2.4 </title>
+    <title>數據分析儀表板 V1.2.5 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -602,15 +602,19 @@
             const percent = total > 0 ? (i.count / total * 100).toFixed(1) : 0;
             return [isMobile ? i.label : `${i.label} ${percent}%`, i.count]; 
         });
-        dt.addRows(rows);
         new google.visualization.PieChart(document.getElementById('paymentChartContainer')).draw(dt, {
-            ...darkThemeOptions,
-            pieHole: 0.5, is3D: false,
-            legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
-            pieSliceText: isMobile ? 'percentage' : 'none',
-            colors: ['#4e73df', '#e74a3b', '#f6c23e', '#36b9cc'], 
-            chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
-            tooltip: { trigger: 'focus' }
+          ...darkThemeOptions,
+          pieHole: 0.5,
+          is3D: false,
+          legend: isMobile
+            ? { position: 'bottom', textStyle: { fontSize: 12, color: '#e6e6e6' } }
+            : { position: 'labeled', textStyle: { fontSize: 14, color: '#e6e6e6' } },
+          pieSliceText: isMobile ? 'percentage' : 'none',
+          colors: ['#4e73df', '#e74a3b', '#f6c23e', '#36b9cc'],
+          chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
+        
+          // ✅ 不要覆蓋掉 darkThemeOptions.tooltip，改用「合併」
+          tooltip: { ...darkThemeOptions.tooltip, trigger: 'focus' }
         });
     }
 
@@ -628,15 +632,21 @@
         });
         dt.addRows(rows);
         const options = {
-            pieHole: 0.4, is3D: false,
-            legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
-            pieSliceText: isMobile ? 'percentage' : 'none',
-            colors: chartColors,
-            chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
-            tooltip: { trigger: 'focus' }
+          pieHole: 0.5, //（問題2會一起修）
+          is3D: false,
+          legend: isMobile
+            ? { position: 'bottom', textStyle: { fontSize: 12, color: '#e6e6e6' } }
+            : { position: 'labeled', textStyle: { fontSize: 14, color: '#e6e6e6' } },
+          pieSliceText: isMobile ? 'percentage' : 'none',
+          colors: chartColors,
+          chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
+        
+          // ✅ 一樣改成合併
+          tooltip: { ...darkThemeOptions.tooltip, trigger: 'focus' }
         };
+        
         new google.visualization.PieChart(document.getElementById('consumptionChartContainer'))
-            .draw(dt, { ...darkThemeOptions, ...options });
+          .draw(dt, { ...darkThemeOptions, ...options });
     }
 
     function drawMonthlyChart(data) {
