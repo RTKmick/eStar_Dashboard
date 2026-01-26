@@ -2,7 +2,7 @@
 <html>
 <head>
     <base target="_top">
-    <title>數據分析儀表板 V1.0 </title>
+    <title>數據分析儀表板 V1.1 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -27,6 +27,45 @@
         
         /* 修正橫向與縱向座標軸的標籤 */
         svg g text {font-family: 'Segoe UI', Arial !important;}
+
+
+        /* 強制修正提示框 (Tooltip) 的文字顏色為深灰色，以便在白底顯示 */
+        .google-visualization-tooltip {
+            border: none !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
+            padding: 10px !important;
+        }
+              
+        .google-visualization-tooltip-item text {fill: #333333 !important;}
+        
+        /* 確保提示框內的數據列表文字也是深色 */
+        .google-visualization-tooltip-item-list {color: #333333 !important;}
+
+        /* 進階版：將提示框改為深色主題 */
+        .google-visualization-tooltip {
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+        }
+
+        /* --- 統一深色提示框設定 --- */
+        /* 1. 設定提示框背景為深黑色 */
+        .google-visualization-tooltip {
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+        }
+        
+        /* 2. 強制提示框內所有文字變為白色/淺灰色 (解決看不見的問題) */
+        .google-visualization-tooltip text, 
+        .google-visualization-tooltip-item text,
+        .google-visualization-tooltip-item-list,
+        .google-visualization-tooltip-item span {
+            fill: #e6e6e6 !important;
+            color: #e6e6e6 !important;
+            font-size: 14px !important;
+        }        
         
         /* 全域 box-sizing */
         * { box-sizing: border-box; }
