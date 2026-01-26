@@ -2,800 +2,290 @@
 <html>
 <head>
     <base target="_top">
-    <title>數據分析儀表板 V1.2 </title>
+    <title>數據分析儀表板 V1.3 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
     <style>
-        /* 強制修正 Google Charts 自動產生的文字顏色 */
+        /* --- 1. 全域與圖表文字修正 --- */
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #0e1117; 
+            color: #e6e6e6; 
+            padding: 20px; 
+            margin: 0; 
+            overscroll-behavior-y: contain; 
+        }
+
         #paymentChartContainer text, 
         #consumptionChartContainer text, 
         #monthlyChartContainer text, 
         #weeklyChartContainer text, 
         #monthlyRevenueChart text, 
         #annualRevenueChart text {
-            fill: #e6e6e6 !important; /* 圖表內的 SVG 文字顏色 */
+            fill: #e6e6e6 !important;
             color: #e6e6e6 !important;
         }
 
-        /* --- 終極修正：強制提示框顯示淺色文字 --- */
-        /* 鎖定提示框內所有的 SVG 文字與 HTML 元素 */
-        .google-visualization-tooltip, 
-        .google-visualization-tooltip * {
-            background-color: #161b22 !important; /* 確保背景是深色 */
-            color: #ffffff !important;           /* 確保 HTML 文字是白色 */
-            fill: #ffffff !important;            /* 確保 SVG 文字是白色 */
-            border-color: #30363d !important;
-        }
-        
-        /* 特別針對歷年趨勢圖這種多行數據的列表修正 */
-        .google-visualization-tooltip-item-list,
-        .google-visualization-tooltip-item-list *,
-        .google-visualization-tooltip-item {
-            color: #ffffff !important;
-            fill: #ffffff !important;
-        }
-        
-        /* 修正圓餅圖指向標籤的細線顏色 */
-        path[stroke="#333333"], path[stroke="#636363"] {stroke: #8b949e !important;}
-        
-        /* 如果有使用 Google Table，修正表格文字 */
-        .google-visualization-table-table {color: #333 !important; /* 表格通常背景是白的，文字保持深色 */}
-        
-        /* 修正橫向與縱向座標軸的標籤 */
-        svg g text {font-family: 'Segoe UI', Arial !important;}
-
-
-        /* 強制修正提示框 (Tooltip) 的文字顏色為深灰色，以便在白底顯示 */
-        .google-visualization-tooltip {
-            border: none !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
-            padding: 10px !important;
-        }              
-
-        /* 進階版：將提示框改為深色主題 */
-        .google-visualization-tooltip {
-            background-color: #161b22 !important;
-            border: 1px solid #30363d !important;
-        }
-
-        /* --- 統一深色提示框設定 --- */
-        /* 1. 設定提示框背景為深黑色 */
+        /* --- 2. 提示框 (Tooltip) 終極深色修正 --- */
+        /* 鎖定背景與邊框 */
         .google-visualization-tooltip {
             background-color: #161b22 !important;
             border: 1px solid #30363d !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
             border-radius: 8px !important;
             padding: 10px !important;
+            pointer-events: none; /* 避免擋住滑鼠 */
         }
-        
-        /* 2. 強制提示框內所有文字變為白色/淺灰色 (解決看不見的問題) */
-        .google-visualization-tooltip text, 
-        .google-visualization-tooltip-item text,
-        .google-visualization-tooltip-item-list,
-        .google-visualization-tooltip-item span {
-            fill: #e6e6e6 !important;
-            color: #e6e6e6 !important;
-            font-size: 14px !important;
-        }        
-        
-        /* 全域 box-sizing */
-        * { box-sizing: border-box; }
 
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            /* 改成深色背景 */
-            background-color: #0e1117; /* 深灰黑 */
-            color: #e6e6e6; /* 字體改淺灰 */
-            padding: 20px; 
-            margin: 0; 
-            overscroll-behavior-y: contain; 
+        /* 強制所有層級文字顯色 */
+        .google-visualization-tooltip text,
+        .google-visualization-tooltip span,
+        .google-visualization-tooltip-item,
+        .google-visualization-tooltip-item-list * {
+            fill: #ffffff !important;
+            color: #ffffff !important;
+            font-size: 14px !important;
         }
-        
-        /* --- 標題區域 --- */
-        h1 { 
-            display: flex; align-items: center; flex-wrap: wrap;
-            /* 改成科技藍或螢光色，移除底部灰線改為深色線 */
-            color: #58a6ff; border-bottom: 2px solid #30363d;
-            padding-bottom: 10px; margin-bottom: 20px; 
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); 
-            word-wrap: break-word; 
-        }
-        
-        #headerDate { margin-left: 15px; font-weight: normal; color: #555; font-size: 1.2rem; }
-        
-        /* 統一所有區塊標題樣式 */
-        h2 { font-size: 1.2rem; color: #555; margin-top: 0; font-weight: 600; margin-bottom: 15px; }
-        
-        /* --- 按鈕 --- */
+
+        /* 修正圓餅圖指向標籤細線 */
+        path[stroke="#333333"], path[stroke="#636363"] { stroke: #8b949e !important; }
+
+        /* --- 3. UI 佈局設定 --- */
+        h1 { display: flex; align-items: center; flex-wrap: wrap; color: #58a6ff; border-bottom: 2px solid #30363d; padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { font-size: 1.2rem; color: #8b949e; margin-top: 0; font-weight: 600; margin-bottom: 15px; }
+        #headerDate { margin-left: 15px; font-weight: normal; color: #8b949e; font-size: 1.2rem; }
+
         .refresh-btn {
             margin-left: 15px; width: 36px; height: 36px; font-size: 20px;
             background: linear-gradient(135deg, #007bff, #0056b3);
             color: white; border-radius: 50%; border: none; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.2s; outline: none;
         }
-        .refresh-btn:hover { background: linear-gradient(135deg, #0056b3, #004085); transform: scale(1.1); }
-        .refresh-btn:active { transform: scale(0.95); }
         .spin-anim { animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- 卡片容器 --- */
-        .chart-container {
-            /* 背景改半透明黑 */
-            background-color: rgba(22, 27, 34, 0.8); 
-            /* 加上微弱邊框 */
-            border: 1px solid #30363d;
-            /* 文字顏色 */
-            color: #ffffff;
-            /* 陰影改深色 */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            /* ...其他保留 */
-        }
-        @media (hover: hover) { .chart-container:hover { transform: translateY(-2px); } }
+        .chart-container { background-color: rgba(22, 27, 34, 0.8); border: 1px solid #30363d; color: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         
-        /* --- 主網格佈局 (3欄) --- */
-        .dashboard-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; /* 手機單欄 */
-            gap: 20px; 
-            /* 關鍵修改：移除 align-items: start，預設為 stretch (等高) */
-        }
-        
-        @media (min-width: 768px) {
-            .dashboard-grid { grid-template-columns: 1fr 1fr; }
-            .full-width { grid-column: 1 / -1; }
-            .chart-container { padding: 20px; } 
-        }
+        @media (min-width: 768px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } .full-width { grid-column: 1 / -1; } }
+        @media (min-width: 1200px) { .dashboard-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
-        /* 電腦版：上方三個區塊並排 */
-        @media (min-width: 1200px) {
-            .dashboard-grid { grid-template-columns: 1fr 1fr 1fr; }
-        }
+        .split-row-group { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { .split-row-group { grid-template-columns: 1fr 1fr; } }
 
-        /* --- 強制雙欄群組 --- */
-        .split-row-group {
-            grid-column: 1 / -1; 
-            display: grid;
-            grid-template-columns: 1fr; 
-            gap: 20px;
-        }
-        @media (min-width: 768px) {
-            .split-row-group {
-                grid-template-columns: 1fr 1fr; 
-            }
-        }
-
-        /* --- 統計卡片 --- */
-        .stat-card { 
-            padding: 15px; 
-            border-radius: 10px; 
-            color: white; 
-            text-align: center; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            height: 100%; /* 確保高度一致 */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-label { font-size: 0.9rem; opacity: 0.95; margin-bottom: 5px; font-weight: 500; }
-        .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
-
-        /* 顏色定義 */
+        .stat-card { padding: 15px; border-radius: 10px; color: white; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-value { font-size: 2rem; font-weight: 800; }
         .bg-danger { background-color: #dc3545 !important; }
         .bg-warning { background-color: #ffc107 !important; color: #212529 !important; } 
         .bg-primary { background-color: #0d6efd !important; }
         .bg-success { background-color: #198754 !important; }
-        .bg-gray { background-color: #6c757d !important; } 
-        .text-white { color: white !important; }
+        .bg-gray { background-color: #6c757d !important; }
 
-        .google-visualization-table-table { font-size: 14px !important; }
-        .vip-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-        @media (max-width: 768px) { .vip-name { max-width: 90px; } }
-
-        /* --- 手機版微調 --- */
         @media (max-width: 768px) {
-            body { padding: 10px; background-color: #eef2f5; overflow-x: hidden; }
-            h1 { font-size: 1.4rem; margin-bottom: 15px; } 
-            #headerDate { display: block; font-size: 1rem; margin-left: 0 !important; margin-top: 5px; width: 100%; } 
-            .refresh-btn { margin-left: 0; margin-top: 5px; }
-            .stat-value { font-size: 1.6rem; } 
-            /* 手機版圖表高度固定，避免過長或過短 */
-            #paymentChartContainer, #consumptionChartContainer, #monthlyChartContainer, #weeklyChartContainer { height: 260px !important; min-height: 260px !important; }
-            #calendarChartContainer { overflow-x: auto; overflow-y: hidden; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 10px; }
-            .full-width, .split-row-group { grid-column: auto !important; }
+            #paymentChartContainer, #consumptionChartContainer, #monthlyChartContainer, #weeklyChartContainer { height: 260px !important; }
+            #calendarChartContainer { overflow-x: auto; }
         }
     </style>
 </head>
 <body>
-    <h1>
-        eStarCRM 數據儀表板 
-        <span id="headerDate"></span>
-        <button id="btnRefresh" class="refresh-btn" title="重新整理數據">
-            <span id="iconRefresh">↻</span>
-        </button>
+    <h1> eStarCRM 數據儀表板 <span id="headerDate"></span>
+        <button id="btnRefresh" class="refresh-btn" title="重新整理數據"><span id="iconRefresh">↻</span></button>
     </h1>
 
     <div class="dashboard-grid">
-        
         <div class="chart-container" id="overview-panel">
             <h2>即時營運概況 (Overview)</h2>
-            
-            <div class="row g-2" style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
-                <div style="flex: 1 1 45%;">
-                    <div class="stat-card bg-danger">
-                        <div class="stat-label">本日 (Today)</div>
-                        <div class="stat-value" id="count-today">0</div>
-                    </div>
-                </div>
-                <div style="flex: 1 1 45%;">
-                    <div class="stat-card bg-warning text-white">
-                        <div class="stat-label">本週 (Week)</div>
-                        <div class="stat-value" id="count-week">0</div>
-                    </div>
-                </div>
-                <div style="flex: 1 1 45%;">
-                    <div class="stat-card bg-primary">
-                        <div class="stat-label">本月 (Month)</div>
-                        <div class="stat-value" id="count-month">0</div>
-                    </div>
-                </div>
-                <div style="flex: 1 1 45%;">
-                    <div class="stat-card bg-success">
-                        <div class="stat-label">年度 (Current)</div>
-                        <div class="stat-value" id="count-year">0</div>
-                    </div>
-                </div>
-
-                <div style="flex: 1 1 100%;">
-                    <div class="stat-card bg-gray">
-                        <div class="stat-label">年度 (2025_10-12)</div>
-                        <div class="stat-value" id="count-2025">Loading...</div>
-                    </div>
-                </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-danger"><div class="stat-label">本日</div><div class="stat-value" id="count-today">0</div></div></div>
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-warning"><div class="stat-label">本週</div><div class="stat-value" id="count-week">0</div></div></div>
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-primary"><div class="stat-label">本月</div><div class="stat-value" id="count-month">0</div></div></div>
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-success"><div class="stat-label">年度</div><div class="stat-value" id="count-year">0</div></div></div>
+                <div style="flex: 1 1 100%;"><div class="stat-card bg-gray"><div class="stat-label">年度 (2025_10-12)</div><div class="stat-value" id="count-2025">Loading...</div></div></div>
             </div>
         </div>
 
-        <div class="chart-container">
-            <h2>付款類型 (By Person)</h2>
-            <div id="paymentChartContainer" style="flex: 1; min-height: 300px;"></div>
-        </div>
+        <div class="chart-container"><h2>付款類型 (By Person)</h2><div id="paymentChartContainer" style="min-height: 300px;"></div></div>
+        <div class="chart-container"><h2>消費貢獻度 (By Volume)</h2><div id="consumptionChartContainer" style="min-height: 300px;"></div></div>
+        
+        <div class="chart-container full-width"><h2>年度來客熱點 (Daily Activity)</h2><div id="calendarChartContainer"></div></div>
 
-        <div class="chart-container">
-            <h2>消費貢獻度 (By Volume)</h2>
-            <div id="consumptionChartContainer" style="flex: 1; min-height: 300px;"></div>
-        </div>
-
-        <div class="chart-container full-width">
-            <h2>年度來客熱點 (Daily Activity)</h2>
-            <div id="calendarChartContainer"></div>
+        <div class="split-row-group">
+            <div class="chart-container"><h2>每月來客數 vs 目標</h2><div id="monthlyChartContainer" style="height: 350px;"></div></div>
+            <div class="chart-container"><h2>每週來客數 (Weekly 3D)</h2><div id="weeklyChartContainer" style="height: 350px;"></div></div>
         </div>
 
         <div class="split-row-group">
-            <div class="chart-container">
-                <h2>每月來客數 vs 目標 (Monthly Target)</h2>
-                <div id="monthlyChartContainer" style="height: 350px;"></div>
-            </div>
-
-            <div class="chart-container">
-                <h2>每週來客數 (Weekly 3D)</h2>
-                <div id="weeklyChartContainer" style="height: 350px;"></div>
-            </div>
+            <div class="chart-container"><h2>歷年同月營收比較</h2><div id="monthlyRevenueChart" style="height: 350px;"></div></div>
+            <div class="chart-container"><h2>年度總營收成長</h2><div id="annualRevenueChart" style="height: 350px;"></div></div>
         </div>
 
         <div class="split-row-group">
-            <div class="chart-container">
-                <h2>歷年同月營收比較 (Monthly Trend)</h2>
-                <div id="monthlyRevenueChart" style="height: 350px;"></div>
-            </div>
-
-            <div class="chart-container">
-                <h2>年度總營收成長 (Annual Total)</h2>
-                <div id="annualRevenueChart" style="height: 350px;"></div>
-            </div>
+            <div class="chart-container"><h2>VIP 熟客排行 (1-25)</h2><div id="vipLeftContainer"></div></div>
+            <div class="chart-container"><h2>VIP 熟客排行 (26-50)</h2><div id="vipRightContainer"></div></div>
         </div>
-
-        <div class="split-row-group">
-            <div class="chart-container">
-                <h2>VIP 熟客排行 (TOP 1-25)</h2>
-                <div id="vipLeftContainer"></div>
-            </div>
-
-            <div class="chart-container">
-                <h2>VIP 熟客排行 (TOP 26-50)</h2>
-                <div id="vipRightContainer"></div>
-            </div>
-        </div>
-
     </div>
     
     <script src="config.js"></script>
-    
     <script type="text/javascript">
-
-    // ✅ 新寫法 (直接讀取設定檔)
     const GAS_API_URL = CONFIG.API_URL;
-        
-    // --- GitHub 專用：API 呼叫核心 ---
     function callApi(action, data = {}) {
-        return fetch(GAS_API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: action, data: data })
-        })
-        .then(res => {
-            const contentType = res.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                return res.json();
-            } else {
-                throw new Error("伺服器回應非 JSON 格式 (可能是維護中或後端忙碌)");
-            }
-        })
-        .then(result => {
-            if(result.error) throw new Error(result.error);
-            return result;
-        });
+        return fetch(GAS_API_URL, { method: "POST", body: JSON.stringify({ action: action, data: data }) })
+        .then(res => res.json()).then(result => { if(result.error) throw new Error(result.error); return result; });
     }
-    // ===============================================================
 
     google.charts.load('current', {'packages':['corechart', 'calendar', 'table']});
     google.charts.setOnLoadCallback(initDashboard);
 
-    let globalCachedData = null;
-    let autoRefreshTimer = null;
-    let globalRevenueData = null; 
+    let globalCachedData = null, globalRevenueData = null;
 
-    // 定義深色主題的共用設定
     const darkThemeOptions = {
         backgroundColor: 'transparent',
         legend: { textStyle: { color: '#e6e6e6' } },
         titleTextStyle: { color: '#e6e6e6' },
-        hAxis: { 
-            textStyle: { color: '#e6e6e6' },
-            titleTextStyle: { color: '#e6e6e6' }, // 加入這行修正軸標題
-            gridlines: { color: '#30363d' } 
-        },
-        vAxis: { 
-            textStyle: { color: '#e6e6e6' },
-            titleTextStyle: { color: '#e6e6e6' }, // 加入這行修正軸標題
-            gridlines: { color: '#30363d' }
-        },
-        annotations: {
-            textStyle: { color: '#e6e6e6' } // 針對柱狀圖上的文字
-        }
-        tooltip: { 
-                isHtml: true, // 強制使用 HTML 格式渲染提示框，這讓 CSS 更好控制
-                textStyle: { color: '#ffffff', fontSize: 14 } 
-        }        
+        hAxis: { textStyle: { color: '#e6e6e6' }, gridlines: { color: '#30363d' } },
+        vAxis: { textStyle: { color: '#e6e6e6' }, gridlines: { color: '#30363d' } },
+        annotations: { textStyle: { color: '#e6e6e6' } }, // 這裡原本少了一個逗號
+        tooltip: { isHtml: true, textStyle: { color: '#ffffff' } } 
     };
-        
+
     function initDashboard() {
-        runDataFetch(); 
-        autoRefreshTimer = setInterval(runDataFetch, 3600000); 
-        updateHeaderTime();       
-        loadRevenueCharts();    
+        runDataFetch();
+        setInterval(runDataFetch, 3600000);
+        updateHeaderTime();
+        loadRevenueCharts();
     }
 
     function loadRevenueCharts() {
-        console.log('1. 準備抓取營收資料...');          
-        callApi('getRevenueData')
-            .then(drawRevenueCharts)
-            .catch(err => console.error("營收資料讀取失敗", err));
+        callApi('getRevenueData').then(drawRevenueCharts).catch(err => console.error("營收失敗", err));
     }
 
     function drawRevenueCharts(data) {
-        console.log('2. 營收資料已回傳:', data);
-
         if (!data || !data.monthly || !data.annual) return;
-        globalRevenueData = data; 
+        globalRevenueData = data;
+        const parseMoney = v => typeof v === 'number' ? v : parseFloat(v.toString().replace(/[$,]/g, '')) || 0;
+        const currentYearStr = new Date().getFullYear().toString();
 
-        function parseMoney(value) {
-            if (!value) return 0;
-            if (typeof value === 'number') return value;
-            var cleanString = value.toString().replace(/[$,]/g, '');
-            return parseFloat(cleanString) || 0;
+        // Monthly Trend
+        const mRows = data.monthly.slice(1);
+        const dtM = new google.visualization.DataTable();
+        dtM.addColumn('string', '月份');
+        const series = {};
+        mRows.forEach((r, i) => {
+            const yr = r[0].toString();
+            dtM.addColumn('number', yr);
+            series[i] = yr === currentYearStr ? { lineWidth: 5 } : (parseInt(yr) <= 2021 ? { lineDashStyle: [4, 4], color: '#999' } : {});
+        });
+        const rowsM = [];
+        for (let m = 1; m <= 12; m++) {
+            const rData = [m + '月'];
+            mRows.forEach(yr => { const v = parseMoney(yr[m]); rData.push(v === 0 ? null : v); });
+            rowsM.push(rData);
         }
-        var currentYearStr = new Date().getFullYear().toString();
+        dtM.addRows(rowsM);
+        new google.visualization.LineChart(document.getElementById('monthlyRevenueChart')).draw(dtM, { ...darkThemeOptions, series, focusTarget: 'category', chartArea: { width: '85%' } });
 
-        // A. 左圖 (Monthly Trend)
-        var mRaw = data.monthly;
-        if (mRaw.length > 1) {
-            var mRows = mRaw.slice(1); 
-            var lineChartData = new google.visualization.DataTable();
-            lineChartData.addColumn('string', '月份'); 
-
-            var seriesConfig = {};
-            mRows.forEach(function(row, index) {
-                var yearStr = row[0].toString();
-                lineChartData.addColumn('number', yearStr);
-
-                var style = {};
-                var yearNum = parseInt(yearStr);
-                if (yearNum <= 2021) {
-                    style.lineDashStyle = [4, 4];
-                    style.lineWidth = 1;
-                    style.color = '#999999';
-                }
-                if (yearStr === currentYearStr) {
-                    style.lineWidth = 5;
-                }
-                seriesConfig[index] = style;
-            });
-
-            var monthlyChartRows = [];
-            for (var m = 1; m <= 12; m++) {
-                var rowData = [m + '月'];
-                mRows.forEach(function(yearRow) {
-                    var val = parseMoney(yearRow[m]); 
-                    rowData.push(val === 0 ? null : val); 
-                });
-                monthlyChartRows.push(rowData);
-            }
-            lineChartData.addRows(monthlyChartRows);
-
-            var lineOptions = {
-                ...darkThemeOptions, // <--- 補上這行
-                series: seriesConfig,
-                legend: { position: 'bottom', maxLines: 3, textStyle: { fontSize: 11 } },
-                chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
-                focusTarget: 'category',
-                vAxis: { format: 'short' },
-                pointSize: 5
-            };
-            new google.visualization.LineChart(document.getElementById('monthlyRevenueChart'))
-                .draw(lineChartData, lineOptions);
-        }
-
-        // B. 右圖 (Annual Total)
-        var aRaw = data.annual;
-        if (aRaw.length > 1) {
-            var aRows = aRaw.slice(1); 
-            var comboData = new google.visualization.DataTable();
-            comboData.addColumn('string', '年份');
-            comboData.addColumn('number', '總營收');
-            comboData.addColumn({type: 'string', role: 'style'});
-            comboData.addColumn({type: 'string', role: 'annotation'});
-            comboData.addColumn('number', '發放薪資');
-            comboData.addColumn('number', '含Joy薪資');
-
-            var processedRows = aRows.map(function(row) {
-                var yearStr = row[0].toString();
-                var yearNum = parseInt(yearStr); 
-                var revenue = parseMoney(row[1]);
-                var salary1 = parseMoney(row[2]);
-                var salary2 = parseMoney(row[3]);
-                var label = (revenue / 10000).toFixed(1) + '萬';
-
-                var barStyle = '';
-                if (yearStr === currentYearStr) {
-                    barStyle = 'stroke-color: #36b9cc; stroke-width: 2; fill-color: #36b9cc; fill-opacity: 0.1';
-                } else if (yearStr === '2021') {
-                    barStyle = 'color: #e74a3b; opacity: 1';
-                } else if (yearNum >= 2017 && yearNum <= 2020) {
-                    barStyle = 'color: #999999; opacity: 1';
-                } else {
-                    barStyle = 'color: #36b9cc; opacity: 1';
-                }
-                return [yearStr, revenue, barStyle, label, salary1, salary2];
-            });
-            comboData.addRows(processedRows);
-
-            var comboOptions = {
-                ...darkThemeOptions, // <--- 補上這行
-                seriesType: 'bars',
-                series: {
-                    0: { type: 'bars' }, 
-                    1: { type: 'line', color: '#f6c23e', pointSize: 5, lineWidth: 3 }, 
-                    2: { type: 'line', color: '#00008b', pointSize: 5, lineWidth: 3 }  
-                },
-                legend: { position: 'bottom', textStyle: { fontSize: 11 } },
-                chartArea: { left: '12%', top: '10%', width: '85%', height: '70%' },
-                
-                // 🆕 修改點：設定 Y 軸最大值 3.5M，並強制切分 8 條線
-                vAxis: { 
-                    format: 'short',
-                    viewWindow: {
-                        min: 0,
-                        max: 3500000  // 設定最高刻度為 3.5M
-                    },
-                    // 加上這行：強制顯示 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 (共8條線)
-                    gridlines: { count: 8 } 
-                },
-                
-                bar: { groupWidth: '60%' },
-                annotations: { alwaysOutside: true, textStyle: { fontSize: 12, color: '#666', bold: true } },
-            };
-            new google.visualization.ComboChart(document.getElementById('annualRevenueChart'))
-                .draw(comboData, comboOptions);
-        }
+        // Annual Total
+        const aRows = data.annual.slice(1);
+        const dtA = new google.visualization.DataTable();
+        dtA.addColumn('string', '年份'); dtA.addColumn('number', '總營收'); dtA.addColumn({type:'string', role:'style'}); dtA.addColumn({type:'string', role:'annotation'}); dtA.addColumn('number', '薪資'); dtA.addColumn('number', '含Joy薪資');
+        dtA.addRows(aRows.map(r => {
+            const yr = r[0].toString(), rev = parseMoney(r[1]);
+            let style = yr === currentYearStr ? '#36b9cc' : (yr === '2021' ? '#e74a3b' : '#999');
+            return [yr, rev, `color: ${style}`, (rev/10000).toFixed(1)+'萬', parseMoney(r[2]), parseMoney(r[3])];
+        }));
+        new google.visualization.ComboChart(document.getElementById('annualRevenueChart')).draw(dtA, { ...darkThemeOptions, seriesType: 'bars', series: { 1: { type: 'line', color: '#f6c23e' }, 2: { type: 'line', color: '#58a6ff' } }, vAxis: { gridlines: { count: 8 } } });
     }
-
-    document.getElementById('btnRefresh').addEventListener('click', function() {
-        document.getElementById('iconRefresh').classList.add('spin-anim');
-        runDataFetch();
-    });
-
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-            if (globalCachedData) {
-                drawAllCharts(globalCachedData);
-            }
-            if (globalRevenueData) {
-                drawRevenueCharts(globalRevenueData);
-            }                
-        }, 200);
-    });
 
     function runDataFetch() {
-        console.log('開始更新數據...');
-        callApi('getAnalysisData')
-            .then(onDataSuccess)
-            .catch(onDataFailure);
+        callApi('getAnalysisData').then(data => {
+            globalCachedData = data;
+            drawAllCharts(data);
+            updateHeaderTime();
+            document.getElementById('iconRefresh').classList.remove('spin-anim');
+        });
     }
 
-    function onDataSuccess(data) {
-        document.getElementById('iconRefresh').classList.remove('spin-anim');
-        if (data.error) { onDataFailure(new Error(data.error)); return; }
-        globalCachedData = data;
-        drawAllCharts(data);
-        updateHeaderTime(); 
+    function drawAllCharts(data) {
+        updateOverview(data);
+        if (data.paymentTypes) drawPie('paymentChartContainer', data.paymentTypes);
+        if (data.consumptionTypes) drawPie('consumptionChartContainer', data.consumptionTypes);
+        if (data.monthlyVisits) drawColumn(data.monthlyVisits);
+        if (data.weeklyVisits) drawWeekly(data.weeklyVisits, data.weeklyTarget);
+        if (data.calendarData) drawCalendar(data.calendarData);
+        if (data.topCustomers) drawVIPs(data.topCustomers);
     }
 
-    function onDataFailure(error) {
-        document.getElementById('iconRefresh').classList.remove('spin-anim');
-        console.warn('更新失敗，請檢查網路連線。', error);
+    function updateOverview(data) {
+        const s = data.summary || {};
+        ['today', 'week', 'month', 'year'].forEach(k => {
+            const val = s[k] ? s[k].count : 0;
+            document.getElementById(`count-${k}`).innerText = val;
+        });
+        document.getElementById('count-2025').innerText = data.year2025 || 0;
+    }
+
+    function drawPie(id, data) {
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', 'Label'); dt.addColumn('number', 'Value');
+        dt.addRows(data.map(i => [i.label, i.count]));
+        new google.visualization.PieChart(document.getElementById(id)).draw(dt, { ...darkThemeOptions, pieHole: 0.4 });
+    }
+
+    function drawColumn(data) {
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', '月'); dt.addColumn('number', '目標'); dt.addColumn('number', '實際');
+        dt.addRows(data.map(i => [i.month, i.target, i.visits]));
+        new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, { ...darkThemeOptions, colors: ['#ff9900', '#4e73df'] });
+    }
+
+    function drawWeekly(data, target = 130) {
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', '週'); dt.addColumn('number', '來客'); dt.addColumn('number', '標線');
+        dt.addRows(data.map(i => [i.week, i.visits, target]));
+        new google.visualization.ComboChart(document.getElementById('weeklyChartContainer')).draw(dt, { ...darkThemeOptions, seriesType: 'bars', series: { 1: { type: 'line', color: 'red' } } });
+    }
+
+    function drawCalendar(data) {
+        const dt = new google.visualization.DataTable();
+        dt.addColumn({ type: 'date', id: 'Date' }); dt.addColumn({ type: 'number', id: 'Visits' });
+        dt.addRows(data.map(i => [new Date(i.y, i.m, i.d), i.count]));
+        new google.visualization.Calendar(document.getElementById('calendarChartContainer')).draw(dt, { height: 200, calendar: { cellSize: 15, cellColor: { stroke: '#0e1117' } } });
+    }
+
+    function drawVIPs(data) {
+        const render = (id, list, start, max) => {
+            document.getElementById(id).innerHTML = list.map((item, i) => {
+                const pct = (item.visits / max) * 100;
+                return `<div style="display:flex; align-items:center; margin-bottom:5px;">
+                    <span style="width:25px;">${start+i}</span>
+                    <div style="flex:1; background:rgba(255,255,255,0.1); border-radius:10px; position:relative; height:25px;">
+                        <div style="width:${pct}%; background:#58a6ff; height:100%; border-radius:10px; opacity:0.3;"></div>
+                        <div style="position:absolute; top:0; left:10px; width:100%; display:flex; justify-content:space-between; padding-right:20px;">
+                            <span>${item.name}</span><span>${item.visits}</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        };
+        const max = data[0].visits;
+        render('vipLeftContainer', data.slice(0, 25), 1, max);
+        render('vipRightContainer', data.slice(25, 50), 26, max);
     }
 
     function updateHeaderTime() {
         const now = new Date();
-        const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
-                        now.getMinutes().toString().padStart(2, '0');
-        const dateStr = now.getFullYear() + '/' + 
-                        String(now.getMonth() + 1).padStart(2, '0') + '/' + 
-                        String(now.getDate()).padStart(2, '0') + ' ' + timeStr;
-        document.getElementById('headerDate').textContent = dateStr;
+        document.getElementById('headerDate').innerText = now.toLocaleString();
     }
 
-    // 🆕 數字跳動動畫
-    function animateValue(id, start, end, duration) {
-        var obj = document.getElementById(id);
-        if (!obj) return;
-        var range = end - start;
-        var minTimer = 50;
-        var stepTime = Math.abs(Math.floor(duration / range));
-        stepTime = Math.max(stepTime, minTimer);
-        var startTime = new Date().getTime();
-        var endTime = startTime + duration;
-        var timer;
-        
-        function run() {
-            var now = new Date().getTime();
-            var remaining = Math.max((endTime - now) / duration, 0);
-            var value = Math.round(end - (remaining * range));
-            obj.innerHTML = value;
-            if (value == end) {
-                clearInterval(timer);
-            }
-        }
-        timer = setInterval(run, stepTime);
-        run();
-    }
+    document.getElementById('btnRefresh').onclick = () => {
+        document.getElementById('iconRefresh').classList.add('spin-anim');
+        runDataFetch();
+    };
 
-    // 🆕 更新概況數據
-    function updateOverview(data) {
-        var todayVal = (data.summary && data.summary.today) ? data.summary.today.count : 0;
-        var weekVal = (data.summary && data.summary.week) ? data.summary.week.count : 0;
-        var monthVal = (data.summary && data.summary.month) ? data.summary.month.count : 0;
-        var yearVal = (data.summary && data.summary.year) ? data.summary.year.count : 0;
-        var year2025Val = (data.year2025) ? data.year2025 : 0;
-
-        animateValue("count-today", 0, todayVal, 1000);
-        animateValue("count-week", 0, weekVal, 1000);
-        animateValue("count-month", 0, monthVal, 1000);
-        animateValue("count-year", 0, yearVal, 1000);
-        animateValue("count-2025", 0, year2025Val, 1000);
-    }
-
-    function drawAllCharts(data) {
-        updateOverview(data); // 呼叫更新方塊
-        if (data.paymentTypes) drawPaymentChart(data.paymentTypes);
-        if (data.consumptionTypes) drawConsumptionChart(data.consumptionTypes);
-        if (data.monthlyVisits) drawMonthlyChart(data.monthlyVisits);
-        if (data.weeklyVisits) drawWeeklyChart(data.weeklyVisits, data.weeklyTarget);
-        if (data.calendarData) drawCalendarChart(data.calendarData);
-        if (data.topCustomers) drawTop50Chart(data.topCustomers);
-    }
-
-    function drawPaymentChart(data) {
-        const total = data.reduce((sum, item) => sum + item.count, 0);
-        const dt = new google.visualization.DataTable();
-        dt.addColumn('string', '類型');
-        dt.addColumn('number', '次數');
-        const isMobile = window.innerWidth < 600;
-        const rows = data.map(i => {
-            const percent = total > 0 ? (i.count / total * 100).toFixed(1) : 0;
-            return [isMobile ? i.label : `${i.label} ${percent}%`, i.count]; 
-        });
-        dt.addRows(rows);
-        new google.visualization.PieChart(document.getElementById('paymentChartContainer')).draw(dt, {
-            ...darkThemeOptions,
-            pieHole: 0.5, is3D: false,
-            legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
-            pieSliceText: isMobile ? 'percentage' : 'none',
-            colors: ['#4e73df', '#e74a3b', '#f6c23e', '#36b9cc'], 
-            chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
-            tooltip: { trigger: 'focus' }
-        });
-    }
-
-    function drawConsumptionChart(data) {
-        const total = data.reduce((sum, item) => sum + item.count, 0);
-        const dt = new google.visualization.DataTable();
-        dt.addColumn('string', '類型');
-        dt.addColumn('number', '加權次數');
-        const isMobile = window.innerWidth < 600;
-        const colorMap = { '儲值卡Card': '#673AB7', '現金付款Cash': '#4CAF50', '電子支付E-pay': '#03A9F4' };
-        const chartColors = [];
-        const rows = data.map(i => {
-            chartColors.push(colorMap[i.label] || '#9E9E9E');
-            return [i.label, i.count];
-        });
-        dt.addRows(rows);
-        const options = {
-            pieHole: 0.4, is3D: false,
-            legend: isMobile ? { position: 'bottom', textStyle: { fontSize: 12 } } : { position: 'labeled', textStyle: { color: '#666', fontSize: 14 } },
-            pieSliceText: isMobile ? 'percentage' : 'none',
-            colors: chartColors,
-            chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
-            tooltip: { trigger: 'focus' }
-        };
-        new google.visualization.PieChart(document.getElementById('consumptionChartContainer'))
-            .draw(dt, { ...darkThemeOptions, ...options });
-    }
-
-    function drawMonthlyChart(data) {
-        const dt = new google.visualization.DataTable();
-        dt.addColumn('string', '月份');
-        dt.addColumn('number', '目標/對比'); 
-        dt.addColumn('number', '實際來客');
-        dt.addRows(data.map(i => [i.month, i.target, i.visits]));
-        new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, {
-            ...darkThemeOptions,  // <--- 補上這行
-            colors: ['#ff9900', '#4e73df'], 
-            legend: { position: 'bottom' },
-            vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
-            chartArea: { left: 50, top: 30, width: '100%', height: '70%' },
-            animation: { startup: true, duration: 1000, easing: 'out' },
-            bar: { groupWidth: '75%' }
-        });
-    }
-
-    function drawWeeklyChart(data, customTarget) {
-        const thresholdValue = customTarget || 130;
-        const dt = new google.visualization.DataTable();
-        dt.addColumn('string', '週次');
-        dt.addColumn('number', '來客數');
-        dt.addColumn('number', '達標線');
-        dt.addRows(data.map(i => [i.week, i.visits, thresholdValue]));
-        new google.visualization.ComboChart(document.getElementById('weeklyChartContainer')).draw(dt, {
-            ...darkThemeOptions,  // <--- 補上這行
-            title: `每週來客數 (基準線: ${thresholdValue})`,
-            seriesType: 'bars',
-            series: { 0: { color: '#1cc88a' }, 1: { type: 'line', color: 'red', lineDashStyle: [4, 4], pointSize: 0, lineWidth: 2, visibleInLegend: true } },
-            legend: { position: 'bottom' }, 
-            vAxis: { format: '0', gridlines: { count: 5, color: '#f3f3f3' } },
-            hAxis: { slantedText: true, showTextEvery: 4, textStyle: { fontSize: 10 } },
-            chartArea: { left: 50, top: 30, width: '100%', height: '70%' },
-            animation: { startup: true, duration: 1000, easing: 'out' }
-        });
-    }
-
-    function drawCalendarChart(data) {
-        const mainContainer = document.getElementById('calendarChartContainer');
-        mainContainer.innerHTML = ''; 
-        let globalMaxCount = 0;
-        data.forEach(d => { if (d.count > globalMaxCount) globalMaxCount = d.count; });
-        const dataByYear = {};
-        data.forEach(item => { if (!dataByYear[item.y]) dataByYear[item.y] = []; dataByYear[item.y].push(item); });
-        const years = Object.keys(dataByYear).sort();
-        const containerWidth = Math.max(mainContainer.offsetWidth, 900); 
-        let autoCellSize = (containerWidth - 50) / 53;
-        if (autoCellSize < 16) autoCellSize = 16;
-        if (autoCellSize > 25) autoCellSize = 25;
-        years.forEach((year, index) => {
-            const yearDiv = document.createElement('div');
-            yearDiv.style.width = containerWidth + 'px';
-            yearDiv.style.height = (autoCellSize * 9 + 40) + 'px';
-            mainContainer.appendChild(yearDiv);
-            const yearData = dataByYear[year];
-            const dt = new google.visualization.DataTable();
-            dt.addColumn({ type: 'date', id: 'Date' });
-            dt.addColumn({ type: 'number', id: 'Visits' });
-            const rows = yearData.map(i => [new Date(i.y, i.m, i.d), i.count]);
-            dt.addRows(rows);
-            const chart = new google.visualization.Calendar(yearDiv);
-            if (index === years.length - 1) {
-                google.visualization.events.addListener(chart, 'ready', function () {
-                    if (mainContainer.scrollWidth > mainContainer.clientWidth) {
-                        const now = new Date();
-                        const start = new Date(now.getFullYear(), 0, 0);
-                        const currentWeek = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
-                        let targetWeek = currentWeek - 5;
-                        if (targetWeek < 0) targetWeek = 0; 
-                        mainContainer.scrollTo({ left: (targetWeek / 53) * mainContainer.scrollWidth, behavior: 'smooth' });
-                    }
-                });
-            }
-            chart.draw(dt, {
-                height: (autoCellSize * 9) + 40, width: containerWidth,
-                calendar: {
-                    cellSize: autoCellSize,
-                    // 空格顏色改成深色
-                    unusedMonthOutlineColor: { stroke: '#30363d', strokeOpacity: 0.8, strokeWidth: 1 },
-                    underYearSpaceColor: '#0e1117', 
-                    cellColor: { stroke: '#0e1117', strokeOpacity: 0.5, strokeWidth: 1 }, 
-                    monthLabel: { fontName: 'Arial', fontSize: 12, color: '#58a6ff', bold: true }, // 月份改亮藍
-                    yearLabel: { fontName: 'Arial', fontSize: 32, color: '#30363d', bold: true }, // 年份浮水印改深灰
-                    dayOfWeekLabel: { fontName: 'Arial', fontSize: 10, color: '#8b949e' }
-                },
-                // 無數據時的格子顏色
-                noDataPattern: { backgroundColor: '#161b22', color: '#161b22' }
-            });
-        });
-    }
-
-    function drawTop50Chart(data) {
-        const top50 = data.slice(0, 50);
-        const globalMax = top50.length > 0 ? top50[0].visits : 1;
-        renderVIPList('vipLeftContainer', top50.slice(0, 25), 1, globalMax);
-        renderVIPList('vipRightContainer', top50.slice(25, 50), 26, globalMax);
-    }
-
-    function renderVIPList(containerId, dataList, startIndex, maxVisits) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        const colors = [
-            { border: '#2ea043', bg: 'rgba(46, 160, 67, 0.15)' }, { border: '#f1c40f', bg: 'rgba(241, 196, 15, 0.15)' },
-            { border: '#8e44ad', bg: 'rgba(142, 68, 173, 0.15)' }, { border: '#2980b9', bg: 'rgba(41, 128, 185, 0.15)' },
-            { border: '#e74c3c', bg: 'rgba(231, 76, 60, 0.15)' }, { border: '#e67e22', bg: 'rgba(230, 126, 34, 0.15)' }
-        ];
-        const today = new Date(); today.setHours(0, 0, 0, 0);
-        let html = '<div>';
-        if (dataList.length === 0) { html += '<p style="text-align:center; color:#999; margin-top:20px;">尚無更多資料</p>'; } 
-        else {
-            dataList.forEach((item, index) => {
-                const rank = startIndex + index;
-                const colorObj = colors[(rank - 1) % colors.length];
-                const widthPercent = (item.visits / maxVisits) * 100;
-                let daysText = "--";
-                if (item.lastVisit) {
-                    const lastDate = new Date(item.lastVisit); lastDate.setHours(0, 0, 0, 0);
-                    const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-                    daysText = (diffDays < 0 ? 0 : diffDays) + " 天";
-                }
-                // 修改後的 HTML 生成 (深色模式專用)
-                html += `
-                <div style="display: flex; align-items: center; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif;">
-                    <div style="width: 25px; text-align: center; font-weight: bold; color: #aaa; font-size: 13px;">${rank}</div>
-                    
-                    <div style="flex: 1; position: relative; height: 36px; margin-left: 5px; border: 2px solid ${colorObj.border}; border-radius: 18px; background-color: rgba(255,255,255,0.05); overflow: hidden; display: flex; align-items: center;">
-                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: ${widthPercent}%; background-color: ${colorObj.bg}; z-index: 0;"></div>
-                        <div style="position: relative; z-index: 1; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; font-weight: 600; color: #fff;">
-                            <span class="vip-name">${item.name}</span>
-                            <span style="font-size: 13px; font-weight: bold;">${item.visits}</span>
-                        </div>
-                    </div>
-                    
-                    <div style="width: 40px; text-align: right; font-weight: bold; color: #aaa; font-size: 12px; margin-left: 5px;">${daysText}</div>
-                </div>`;
-            });
-        }
-        html += '</div>';
-        container.innerHTML = html;
-    }
+    window.onresize = () => { if(globalCachedData) drawAllCharts(globalCachedData); if(globalRevenueData) drawRevenueCharts(globalRevenueData); };
     </script>
 </body>
 </html>
