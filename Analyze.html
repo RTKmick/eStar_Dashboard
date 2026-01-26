@@ -8,6 +8,26 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
     <style>
+        /* 強制修正 Google Charts 自動產生的文字顏色 */
+        #paymentChartContainer text, 
+        #consumptionChartContainer text, 
+        #monthlyChartContainer text, 
+        #weeklyChartContainer text, 
+        #monthlyRevenueChart text, 
+        #annualRevenueChart text {
+            fill: #e6e6e6 !important; /* 圖表內的 SVG 文字顏色 */
+            color: #e6e6e6 !important;
+        }
+        
+        /* 針對圖例 (Legend) 的文字修正 */
+        .google-visualization-tooltip text {fill: #333 !important; /* 提示框文字保持深色以免看不見 */}
+        
+        /* 如果有使用 Google Table，修正表格文字 */
+        .google-visualization-table-table {color: #333 !important; /* 表格通常背景是白的，文字保持深色 */}
+        
+        /* 修正橫向與縱向座標軸的標籤 */
+        svg g text {font-family: 'Segoe UI', Arial !important;}
+        
         /* 全域 box-sizing */
         * { box-sizing: border-box; }
 
@@ -276,17 +296,22 @@
 
     // 定義深色主題的共用設定
     const darkThemeOptions = {
-        backgroundColor: 'transparent', // 讓圖表背景透明，透出 CSS 的黑底
-        legend: { textStyle: { color: '#e6e6e6' } }, // 圖例文字變白
+        backgroundColor: 'transparent',
+        legend: { textStyle: { color: '#e6e6e6' } },
+        titleTextStyle: { color: '#e6e6e6' },
         hAxis: { 
             textStyle: { color: '#e6e6e6' },
-            gridlines: { color: '#30363d' } // 格線變深灰
+            titleTextStyle: { color: '#e6e6e6' }, // 加入這行修正軸標題
+            gridlines: { color: '#30363d' } 
         },
         vAxis: { 
             textStyle: { color: '#e6e6e6' },
+            titleTextStyle: { color: '#e6e6e6' }, // 加入這行修正軸標題
             gridlines: { color: '#30363d' }
         },
-        titleTextStyle: { color: '#e6e6e6' }
+        annotations: {
+            textStyle: { color: '#e6e6e6' } // 針對柱狀圖上的文字
+        }
     };
         
     function initDashboard() {
