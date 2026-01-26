@@ -2,14 +2,61 @@
 <html>
 <head>
     <base target="_top">
-    <title>數據分析儀表板 V1.3 </title>
+    <title>數據分析儀表板 V1.2.1 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
     <style>
-        /* --- 1. 全域與圖表文字修正 --- */
+        /* 強制修正 Google Charts 自動產生的文字顏色 */
+        #paymentChartContainer text, 
+        #consumptionChartContainer text, 
+        #monthlyChartContainer text, 
+        #weeklyChartContainer text, 
+        #monthlyRevenueChart text, 
+        #annualRevenueChart text {
+            fill: #e6e6e6 !important; /* 圖表內的 SVG 文字顏色 */
+            color: #e6e6e6 !important;
+        }
+
+        /* --- 終極修正：強制提示框顯示淺色文字 --- */
+        /* 鎖定提示框容器 */
+        .google-visualization-tooltip {
+            background-color: #161b22 !important; /* 確保背景是深色 */
+            border: 1px solid #30363d !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
+            padding: 10px !important;
+        }
+        
+        /* 修正文字顏色：不再鎖定所有元件的背景，只鎖定文字顏色 */
+        .google-visualization-tooltip text,
+        .google-visualization-tooltip span,
+        .google-visualization-tooltip b,
+        .google-visualization-tooltip-item-list,
+        .google-visualization-tooltip-item {
+            color: #ffffff !important;           /* 確保 HTML 文字是白色 */
+            fill: #ffffff !important;            /* 確保 SVG 文字是白色 */
+        }
+        
+        /* 特別針對歷年趨勢圖這種多行數據的列表修正 */
+        .google-visualization-tooltip-item-list * {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+        }
+        
+        /* 修正圓餅圖指向標籤的細線顏色 */
+        path[stroke="#333333"], path[stroke="#636363"] {stroke: #8b949e !important;}
+        
+        /* 如果有使用 Google Table，修正表格文字 */
+        .google-visualization-table-table {color: #333 !important;}
+        
+        /* 修正橫向與縱向座標軸的標籤 */
+        svg g text {font-family: 'Segoe UI', Arial !important;}
+
+        /* 全域 box-sizing */
         * { box-sizing: border-box; }
+
         body { 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             background-color: #0e1117; 
@@ -18,75 +65,100 @@
             margin: 0; 
             overscroll-behavior-y: contain; 
         }
-
-        #paymentChartContainer text, 
-        #consumptionChartContainer text, 
-        #monthlyChartContainer text, 
-        #weeklyChartContainer text, 
-        #monthlyRevenueChart text, 
-        #annualRevenueChart text {
-            fill: #e6e6e6 !important;
-            color: #e6e6e6 !important;
+        
+        /* --- 標題區域 --- */
+        h1 { 
+            display: flex; align-items: center; flex-wrap: wrap;
+            color: #58a6ff; border-bottom: 2px solid #30363d;
+            padding-bottom: 10px; margin-bottom: 20px; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); 
+            word-wrap: break-word; 
         }
-
-        /* --- 2. 提示框 (Tooltip) 終極深色修正 --- */
-        /* 鎖定背景與邊框 */
-        .google-visualization-tooltip {
-            background-color: #161b22 !important;
-            border: 1px solid #30363d !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
-            border-radius: 8px !important;
-            padding: 10px !important;
-            pointer-events: none; /* 避免擋住滑鼠 */
-        }
-
-        /* 強制所有層級文字顯色 */
-        .google-visualization-tooltip text,
-        .google-visualization-tooltip span,
-        .google-visualization-tooltip-item,
-        .google-visualization-tooltip-item-list * {
-            fill: #ffffff !important;
-            color: #ffffff !important;
-            font-size: 14px !important;
-        }
-
-        /* 修正圓餅圖指向標籤細線 */
-        path[stroke="#333333"], path[stroke="#636363"] { stroke: #8b949e !important; }
-
-        /* --- 3. UI 佈局設定 --- */
-        h1 { display: flex; align-items: center; flex-wrap: wrap; color: #58a6ff; border-bottom: 2px solid #30363d; padding-bottom: 10px; margin-bottom: 20px; }
-        h2 { font-size: 1.2rem; color: #8b949e; margin-top: 0; font-weight: 600; margin-bottom: 15px; }
-        #headerDate { margin-left: 15px; font-weight: normal; color: #8b949e; font-size: 1.2rem; }
-
+        
+        #headerDate { margin-left: 15px; font-weight: normal; color: #555; font-size: 1.2rem; }
+        h2 { font-size: 1.2rem; color: #555; margin-top: 0; font-weight: 600; margin-bottom: 15px; }
+        
+        /* --- 按鈕 --- */
         .refresh-btn {
             margin-left: 15px; width: 36px; height: 36px; font-size: 20px;
             background: linear-gradient(135deg, #007bff, #0056b3);
             color: white; border-radius: 50%; border: none; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.2s; outline: none;
         }
+        .refresh-btn:hover { background: linear-gradient(135deg, #0056b3, #004085); transform: scale(1.1); }
+        .refresh-btn:active { transform: scale(0.95); }
         .spin-anim { animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .chart-container { background-color: rgba(22, 27, 34, 0.8); border: 1px solid #30363d; color: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); }
-        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        /* --- 卡片容器 --- */
+        .chart-container {
+            background-color: rgba(22, 27, 34, 0.8); 
+            border: 1px solid #30363d;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        @media (hover: hover) { .chart-container:hover { transform: translateY(-2px); } }
         
-        @media (min-width: 768px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } .full-width { grid-column: 1 / -1; } }
-        @media (min-width: 1200px) { .dashboard-grid { grid-template-columns: 1fr 1fr 1fr; } }
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 20px; 
+        }
+        
+        @media (min-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr 1fr; }
+            .full-width { grid-column: 1 / -1; }
+        }
+        @media (min-width: 1200px) {
+            .dashboard-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
 
-        .split-row-group { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 768px) { .split-row-group { grid-template-columns: 1fr 1fr; } }
+        .split-row-group {
+            grid-column: 1 / -1; 
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .split-row-group { grid-template-columns: 1fr 1fr; }
+        }
 
-        .stat-card { padding: 15px; border-radius: 10px; color: white; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        .stat-value { font-size: 2rem; font-weight: 800; }
+        .stat-card { 
+            padding: 15px; 
+            border-radius: 10px; 
+            color: white; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-label { font-size: 0.9rem; opacity: 0.95; margin-bottom: 5px; font-weight: 500; }
+        .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
+
         .bg-danger { background-color: #dc3545 !important; }
         .bg-warning { background-color: #ffc107 !important; color: #212529 !important; } 
         .bg-primary { background-color: #0d6efd !important; }
         .bg-success { background-color: #198754 !important; }
-        .bg-gray { background-color: #6c757d !important; }
+        .bg-gray { background-color: #6c757d !important; } 
+        .text-white { color: white !important; }
+
+        .google-visualization-table-table { font-size: 14px !important; }
+        .vip-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
 
         @media (max-width: 768px) {
-            #paymentChartContainer, #consumptionChartContainer, #monthlyChartContainer, #weeklyChartContainer { height: 260px !important; }
-            #calendarChartContainer { overflow-x: auto; }
+            body { padding: 10px; background-color: #eef2f5; overflow-x: hidden; }
+            h1 { font-size: 1.4rem; } 
+            #headerDate { display: block; font-size: 1rem; margin-left: 0 !important; } 
+            .stat-value { font-size: 1.6rem; } 
+            #paymentChartContainer, #consumptionChartContainer, #monthlyChartContainer, #weeklyChartContainer { height: 260px !important; min-height: 260px !important; }
+            #calendarChartContainer { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; }
+            .full-width, .split-row-group { grid-column: auto !important; }
         }
     </style>
 </head>
@@ -98,33 +170,33 @@
     <div class="dashboard-grid">
         <div class="chart-container" id="overview-panel">
             <h2>即時營運概況 (Overview)</h2>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                <div style="flex: 1 1 45%;"><div class="stat-card bg-danger"><div class="stat-label">本日</div><div class="stat-value" id="count-today">0</div></div></div>
-                <div style="flex: 1 1 45%;"><div class="stat-card bg-warning"><div class="stat-label">本週</div><div class="stat-value" id="count-week">0</div></div></div>
-                <div style="flex: 1 1 45%;"><div class="stat-card bg-primary"><div class="stat-label">本月</div><div class="stat-value" id="count-month">0</div></div></div>
-                <div style="flex: 1 1 45%;"><div class="stat-card bg-success"><div class="stat-label">年度</div><div class="stat-value" id="count-year">0</div></div></div>
+            <div class="row g-2" style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-danger"><div class="stat-label">本日 (Today)</div><div class="stat-value" id="count-today">0</div></div></div>
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-warning text-white"><div class="stat-label">本週 (Week)</div><div class="stat-value" id="count-week">0</div></div></div>
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-primary"><div class="stat-label">本月 (Month)</div><div class="stat-value" id="count-month">0</div></div></div>
+                <div style="flex: 1 1 45%;"><div class="stat-card bg-success"><div class="stat-label">年度 (Current)</div><div class="stat-value" id="count-year">0</div></div></div>
                 <div style="flex: 1 1 100%;"><div class="stat-card bg-gray"><div class="stat-label">年度 (2025_10-12)</div><div class="stat-value" id="count-2025">Loading...</div></div></div>
             </div>
         </div>
 
-        <div class="chart-container"><h2>付款類型 (By Person)</h2><div id="paymentChartContainer" style="min-height: 300px;"></div></div>
-        <div class="chart-container"><h2>消費貢獻度 (By Volume)</h2><div id="consumptionChartContainer" style="min-height: 300px;"></div></div>
-        
+        <div class="chart-container"><h2>付款類型 (By Person)</h2><div id="paymentChartContainer" style="flex: 1; min-height: 300px;"></div></div>
+        <div class="chart-container"><h2>消費貢獻度 (By Volume)</h2><div id="consumptionChartContainer" style="flex: 1; min-height: 300px;"></div></div>
+
         <div class="chart-container full-width"><h2>年度來客熱點 (Daily Activity)</h2><div id="calendarChartContainer"></div></div>
 
         <div class="split-row-group">
-            <div class="chart-container"><h2>每月來客數 vs 目標</h2><div id="monthlyChartContainer" style="height: 350px;"></div></div>
+            <div class="chart-container"><h2>每月來客數 vs 目標 (Monthly Target)</h2><div id="monthlyChartContainer" style="height: 350px;"></div></div>
             <div class="chart-container"><h2>每週來客數 (Weekly 3D)</h2><div id="weeklyChartContainer" style="height: 350px;"></div></div>
         </div>
 
         <div class="split-row-group">
-            <div class="chart-container"><h2>歷年同月營收比較</h2><div id="monthlyRevenueChart" style="height: 350px;"></div></div>
-            <div class="chart-container"><h2>年度總營收成長</h2><div id="annualRevenueChart" style="height: 350px;"></div></div>
+            <div class="chart-container"><h2>歷年同月營收比較 (Monthly Trend)</h2><div id="monthlyRevenueChart" style="height: 350px;"></div></div>
+            <div class="chart-container"><h2>年度總營收成長 (Annual Total)</h2><div id="annualRevenueChart" style="height: 350px;"></div></div>
         </div>
 
         <div class="split-row-group">
-            <div class="chart-container"><h2>VIP 熟客排行 (1-25)</h2><div id="vipLeftContainer"></div></div>
-            <div class="chart-container"><h2>VIP 熟客排行 (26-50)</h2><div id="vipRightContainer"></div></div>
+            <div class="chart-container"><h2>VIP 熟客排行 (TOP 1-25)</h2><div id="vipLeftContainer"></div></div>
+            <div class="chart-container"><h2>VIP 熟客排行 (TOP 26-50)</h2><div id="vipRightContainer"></div></div>
         </div>
     </div>
     
@@ -145,17 +217,20 @@
         backgroundColor: 'transparent',
         legend: { textStyle: { color: '#e6e6e6' } },
         titleTextStyle: { color: '#e6e6e6' },
-        hAxis: { textStyle: { color: '#e6e6e6' }, gridlines: { color: '#30363d' } },
-        vAxis: { textStyle: { color: '#e6e6e6' }, gridlines: { color: '#30363d' } },
-        annotations: { textStyle: { color: '#e6e6e6' } }, // 這裡原本少了一個逗號
-        tooltip: { isHtml: true, textStyle: { color: '#ffffff' } } 
+        hAxis: { textStyle: { color: '#e6e6e6' }, titleTextStyle: { color: '#e6e6e6' }, gridlines: { color: '#30363d' } },
+        vAxis: { textStyle: { color: '#e6e6e6' }, titleTextStyle: { color: '#e6e6e6' }, gridlines: { color: '#30363d' } },
+        annotations: { textStyle: { color: '#e6e6e6' } }, // 修正點：補上逗號
+        tooltip: { 
+            isHtml: true, 
+            textStyle: { color: '#ffffff', fontSize: 14 } 
+        }        
     };
-
+        
     function initDashboard() {
-        runDataFetch();
-        setInterval(runDataFetch, 3600000);
-        updateHeaderTime();
-        loadRevenueCharts();
+        runDataFetch(); 
+        setInterval(runDataFetch, 3600000); 
+        updateHeaderTime();       
+        loadRevenueCharts();    
     }
 
     function loadRevenueCharts() {
@@ -164,107 +239,110 @@
 
     function drawRevenueCharts(data) {
         if (!data || !data.monthly || !data.annual) return;
-        globalRevenueData = data;
+        globalRevenueData = data; 
         const parseMoney = v => typeof v === 'number' ? v : parseFloat(v.toString().replace(/[$,]/g, '')) || 0;
         const currentYearStr = new Date().getFullYear().toString();
 
-        // Monthly Trend
+        // Monthly Trend (Left)
         const mRows = data.monthly.slice(1);
-        const dtM = new google.visualization.DataTable();
-        dtM.addColumn('string', '月份');
-        const series = {};
-        mRows.forEach((r, i) => {
-            const yr = r[0].toString();
-            dtM.addColumn('number', yr);
-            series[i] = yr === currentYearStr ? { lineWidth: 5 } : (parseInt(yr) <= 2021 ? { lineDashStyle: [4, 4], color: '#999' } : {});
+        const lineChartData = new google.visualization.DataTable();
+        lineChartData.addColumn('string', '月份'); 
+        const seriesConfig = {};
+        mRows.forEach((row, index) => {
+            const yearStr = row[0].toString();
+            lineChartData.addColumn('number', yearStr);
+            const yearNum = parseInt(yearStr);
+            seriesConfig[index] = yearStr === currentYearStr ? { lineWidth: 5 } : (yearNum <= 2021 ? { lineDashStyle: [4, 4], lineWidth: 1, color: '#999999' } : {});
         });
-        const rowsM = [];
+        const monthlyChartRows = [];
         for (let m = 1; m <= 12; m++) {
-            const rData = [m + '月'];
-            mRows.forEach(yr => { const v = parseMoney(yr[m]); rData.push(v === 0 ? null : v); });
-            rowsM.push(rData);
+            const rowData = [m + '月'];
+            mRows.forEach(yearRow => { const val = parseMoney(yearRow[m]); rowData.push(val === 0 ? null : val); });
+            monthlyChartRows.push(rowData);
         }
-        dtM.addRows(rowsM);
-        new google.visualization.LineChart(document.getElementById('monthlyRevenueChart')).draw(dtM, { ...darkThemeOptions, series, focusTarget: 'category', chartArea: { width: '85%' } });
+        lineChartData.addRows(monthlyChartRows);
+        new google.visualization.LineChart(document.getElementById('monthlyRevenueChart')).draw(lineChartData, { ...darkThemeOptions, series: seriesConfig, focusTarget: 'category', pointSize: 5 });
 
-        // Annual Total
+        // Annual Total (Right)
         const aRows = data.annual.slice(1);
-        const dtA = new google.visualization.DataTable();
-        dtA.addColumn('string', '年份'); dtA.addColumn('number', '總營收'); dtA.addColumn({type:'string', role:'style'}); dtA.addColumn({type:'string', role:'annotation'}); dtA.addColumn('number', '薪資'); dtA.addColumn('number', '含Joy薪資');
-        dtA.addRows(aRows.map(r => {
-            const yr = r[0].toString(), rev = parseMoney(r[1]);
-            let style = yr === currentYearStr ? '#36b9cc' : (yr === '2021' ? '#e74a3b' : '#999');
-            return [yr, rev, `color: ${style}`, (rev/10000).toFixed(1)+'萬', parseMoney(r[2]), parseMoney(r[3])];
+        const comboData = new google.visualization.DataTable();
+        comboData.addColumn('string', '年份'); comboData.addColumn('number', '總營收'); comboData.addColumn({type: 'string', role: 'style'}); comboData.addColumn({type: 'string', role: 'annotation'}); comboData.addColumn('number', '發放薪資'); comboData.addColumn('number', '含Joy薪資');
+        comboData.addRows(aRows.map(row => {
+            const yearStr = row[0].toString(), rev = parseMoney(row[1]);
+            const style = yearStr === currentYearStr ? 'fill-color: #36b9cc; fill-opacity: 0.1' : (yearStr === '2021' ? 'color: #e74a3b' : 'color: #999999');
+            return [yearStr, rev, style, (rev/10000).toFixed(1)+'萬', parseMoney(row[2]), parseMoney(row[3])];
         }));
-        new google.visualization.ComboChart(document.getElementById('annualRevenueChart')).draw(dtA, { ...darkThemeOptions, seriesType: 'bars', series: { 1: { type: 'line', color: '#f6c23e' }, 2: { type: 'line', color: '#58a6ff' } }, vAxis: { gridlines: { count: 8 } } });
+        new google.visualization.ComboChart(document.getElementById('annualRevenueChart')).draw(comboData, { ...darkThemeOptions, seriesType: 'bars', series: { 1: { type: 'line', color: '#f6c23e', pointSize: 5 }, 2: { type: 'line', color: '#00008b', pointSize: 5 } }, vAxis: { gridlines: { count: 8 } } });
     }
 
     function runDataFetch() {
-        callApi('getAnalysisData').then(data => {
-            globalCachedData = data;
-            drawAllCharts(data);
-            updateHeaderTime();
-            document.getElementById('iconRefresh').classList.remove('spin-anim');
-        });
+        callApi('getAnalysisData').then(data => { globalCachedData = data; drawAllCharts(data); updateHeaderTime(); });
     }
 
     function drawAllCharts(data) {
         updateOverview(data);
-        if (data.paymentTypes) drawPie('paymentChartContainer', data.paymentTypes);
-        if (data.consumptionTypes) drawPie('consumptionChartContainer', data.consumptionTypes);
-        if (data.monthlyVisits) drawColumn(data.monthlyVisits);
-        if (data.weeklyVisits) drawWeekly(data.weeklyVisits, data.weeklyTarget);
-        if (data.calendarData) drawCalendar(data.calendarData);
-        if (data.topCustomers) drawVIPs(data.topCustomers);
+        if (data.paymentTypes) drawPaymentChart(data.paymentTypes);
+        if (data.consumptionTypes) drawConsumptionChart(data.consumptionTypes);
+        if (data.monthlyVisits) drawMonthlyChart(data.monthlyVisits);
+        if (data.weeklyVisits) drawWeeklyChart(data.weeklyVisits, data.weeklyTarget);
+        if (data.calendarData) drawCalendarChart(data.calendarData);
+        if (data.topCustomers) drawTop50Chart(data.topCustomers);
     }
 
     function updateOverview(data) {
         const s = data.summary || {};
-        ['today', 'week', 'month', 'year'].forEach(k => {
-            const val = s[k] ? s[k].count : 0;
-            document.getElementById(`count-${k}`).innerText = val;
-        });
-        document.getElementById('count-2025').innerText = data.year2025 || 0;
+        document.getElementById("count-today").innerText = s.today?.count || 0;
+        document.getElementById("count-week").innerText = s.week?.count || 0;
+        document.getElementById("count-month").innerText = s.month?.count || 0;
+        document.getElementById("count-year").innerText = s.year?.count || 0;
+        document.getElementById("count-2025").innerText = data.year2025 || 0;
     }
 
-    function drawPie(id, data) {
+    function drawPaymentChart(data) {
         const dt = new google.visualization.DataTable();
-        dt.addColumn('string', 'Label'); dt.addColumn('number', 'Value');
+        dt.addColumn('string', '類型'); dt.addColumn('number', '次數');
         dt.addRows(data.map(i => [i.label, i.count]));
-        new google.visualization.PieChart(document.getElementById(id)).draw(dt, { ...darkThemeOptions, pieHole: 0.4 });
+        new google.visualization.PieChart(document.getElementById('paymentChartContainer')).draw(dt, { ...darkThemeOptions, pieHole: 0.5 });
     }
 
-    function drawColumn(data) {
+    function drawConsumptionChart(data) {
+        const dt = new google.visualization.DataTable();
+        dt.addColumn('string', '類型'); dt.addColumn('number', '加權');
+        dt.addRows(data.map(i => [i.label, i.count]));
+        new google.visualization.PieChart(document.getElementById('consumptionChartContainer')).draw(dt, { ...darkThemeOptions, pieHole: 0.4 });
+    }
+
+    function drawMonthlyChart(data) {
         const dt = new google.visualization.DataTable();
         dt.addColumn('string', '月'); dt.addColumn('number', '目標'); dt.addColumn('number', '實際');
         dt.addRows(data.map(i => [i.month, i.target, i.visits]));
         new google.visualization.ColumnChart(document.getElementById('monthlyChartContainer')).draw(dt, { ...darkThemeOptions, colors: ['#ff9900', '#4e73df'] });
     }
 
-    function drawWeekly(data, target = 130) {
+    function drawWeeklyChart(data, target = 130) {
         const dt = new google.visualization.DataTable();
         dt.addColumn('string', '週'); dt.addColumn('number', '來客'); dt.addColumn('number', '標線');
         dt.addRows(data.map(i => [i.week, i.visits, target]));
         new google.visualization.ComboChart(document.getElementById('weeklyChartContainer')).draw(dt, { ...darkThemeOptions, seriesType: 'bars', series: { 1: { type: 'line', color: 'red' } } });
     }
 
-    function drawCalendar(data) {
+    function drawCalendarChart(data) {
         const dt = new google.visualization.DataTable();
         dt.addColumn({ type: 'date', id: 'Date' }); dt.addColumn({ type: 'number', id: 'Visits' });
         dt.addRows(data.map(i => [new Date(i.y, i.m, i.d), i.count]));
         new google.visualization.Calendar(document.getElementById('calendarChartContainer')).draw(dt, { height: 200, calendar: { cellSize: 15, cellColor: { stroke: '#0e1117' } } });
     }
 
-    function drawVIPs(data) {
+    function drawTop50Chart(data) {
         const render = (id, list, start, max) => {
             document.getElementById(id).innerHTML = list.map((item, i) => {
                 const pct = (item.visits / max) * 100;
-                return `<div style="display:flex; align-items:center; margin-bottom:5px;">
-                    <span style="width:25px;">${start+i}</span>
-                    <div style="flex:1; background:rgba(255,255,255,0.1); border-radius:10px; position:relative; height:25px;">
-                        <div style="width:${pct}%; background:#58a6ff; height:100%; border-radius:10px; opacity:0.3;"></div>
-                        <div style="position:absolute; top:0; left:10px; width:100%; display:flex; justify-content:space-between; padding-right:20px;">
-                            <span>${item.name}</span><span>${item.visits}</span>
+                return `<div style="display:flex; align-items:center; margin-bottom:8px;">
+                    <div style="width:25px; font-size:13px; color:#aaa;">${start+i}</div>
+                    <div style="flex:1; position:relative; height:36px; border:2px solid #58a6ff; border-radius:18px; overflow:hidden; display:flex; align-items:center; background:rgba(255,255,255,0.05);">
+                        <div style="position:absolute; width:${pct}%; background:rgba(88,166,255,0.15); height:100%;"></div>
+                        <div style="position:relative; width:100%; display:flex; justify-content:space-between; padding:0 10px; font-weight:600;">
+                            <span class="vip-name">${item.name}</span><span>${item.visits}</span>
                         </div>
                     </div>
                 </div>`;
