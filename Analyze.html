@@ -2,7 +2,7 @@
 <html>
 <head>
     <base target="_top">
-    <title>數據分析儀表板 V1.2.3 </title>
+    <title>數據分析儀表板 V1.2.4 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -19,44 +19,39 @@
             color: #e6e6e6 !important;
         }
 
-        /* --- 提示框優化：解決寬度不足、換行與看不見的問題 --- */
-        /* 1. 鎖定大容器：強制增加寬度並防止內部元件背景干擾 */
+        /* --- 提示框優化：解決寬度不足、換行與圓餅圖 SVG 白底問題 --- */
+        /* 1. 鎖定大容器：處理背景、陰影與強制不換行 */
         .google-visualization-tooltip {
             background-color: #161b22 !important;
             border: 1px solid #30363d !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
             padding: 12px !important;
-            min-width: 180px !important; /* 強制最小寬度，防止數字長時換行 */
-            white-space: nowrap !important; /* 確保內容不換行 */
+            min-width: 190px !important; /* 增加寬度防止數字換行 */
+            white-space: nowrap !important;
+            border-radius: 8px !important;
         }
-
-        /* 2. 解決文字看不見：強制所有提示框內的 HTML 元素顯示白色 */
+        
+        /* 2. 強制所有子文字顯色：不論是 HTML 還是 SVG 文字都變白色 */
         .google-visualization-tooltip * {
-            background-color: transparent !important; /* 移除內部元件的預設白底 */
+            background-color: transparent !important; /* 移除內部預設白底 */
             color: #ffffff !important;
             fill: #ffffff !important;
             font-size: 14px !important;
-            font-family: 'Segoe UI', Arial !important;
         }
         
-        /* 3. 針對「歷年同月營收」這種列表型的提示框特別修正 */
-        .google-visualization-tooltip-item-list {
-            list-style-type: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
+        /* 3. 關鍵修正：解決圓餅圖(PieChart)內建 SVG 矩形的白底問題 */
+        /* 圓餅圖的提示框是由 SVG path 構成的，必須強制修改它的 fill 填色 */
+        .google-visualization-tooltip svg g path:first-child {
+            fill: #161b22 !important;
+            stroke: #30363d !important;
         }
         
+        /* 4. 列表型提示框(Trend圖)對齊修正 */
         .google-visualization-tooltip-item {
-            padding: 2px 0 !important;
             display: flex !important;
-            justify-content: flex-start !important;
             align-items: center !important;
-        }
-        
-        /* 強制數值與標籤保持在同一行 */
-        .google-visualization-tooltip-item span {
-            display: inline-block !important;
-            white-space: nowrap !important;
+            justify-content: flex-start !important;
+            padding: 2px 0 !important;
         }
         
         /* 修正圓餅圖指向標籤的細線顏色 */
@@ -66,41 +61,7 @@
         .google-visualization-table-table {color: #333 !important; /* 表格通常背景是白的，文字保持深色 */}
         
         /* 修正橫向與縱向座標軸的標籤 */
-        svg g text {font-family: 'Segoe UI', Arial !important;}
-
-
-        /* 強制修正提示框 (Tooltip) 的文字顏色為深灰色，以便在白底顯示 */
-        .google-visualization-tooltip {
-            border: none !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
-            padding: 10px !important;
-        }              
-
-        /* 進階版：將提示框改為深色主題 */
-        .google-visualization-tooltip {
-            background-color: #161b22 !important;
-            border: 1px solid #30363d !important;
-        }
-
-        /* --- 統一深色提示框設定 --- */
-        /* 1. 設定提示框背景為深黑色 */
-        .google-visualization-tooltip {
-            background-color: #161b22 !important;
-            border: 1px solid #30363d !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
-            border-radius: 8px !important;
-            padding: 10px !important;
-        }
-        
-        /* 2. 強制提示框內所有文字變為白色/淺灰色 (解決看不見的問題) */
-        .google-visualization-tooltip text, 
-        .google-visualization-tooltip-item text,
-        .google-visualization-tooltip-item-list,
-        .google-visualization-tooltip-item span {
-            fill: #e6e6e6 !important;
-            color: #e6e6e6 !important;
-            font-size: 14px !important;
-        }        
+        svg g text {font-family: 'Segoe UI', Arial !important;}   
         
         /* 全域 box-sizing */
         * { box-sizing: border-box; }
