@@ -2,7 +2,7 @@
 <html>
 <head>
     <base target="_top">
-    <title>數據分析儀表板 V1.1 </title>
+    <title>數據分析儀表板 V1.2 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -18,9 +18,27 @@
             fill: #e6e6e6 !important; /* 圖表內的 SVG 文字顏色 */
             color: #e6e6e6 !important;
         }
+
+        /* --- 終極修正：強制提示框顯示淺色文字 --- */
+        /* 鎖定提示框內所有的 SVG 文字與 HTML 元素 */
+        .google-visualization-tooltip, 
+        .google-visualization-tooltip * {
+            background-color: #161b22 !important; /* 確保背景是深色 */
+            color: #ffffff !important;           /* 確保 HTML 文字是白色 */
+            fill: #ffffff !important;            /* 確保 SVG 文字是白色 */
+            border-color: #30363d !important;
+        }
         
-        /* 針對圖例 (Legend) 的文字修正 */
-        .google-visualization-tooltip text {fill: #333 !important; /* 提示框文字保持深色以免看不見 */}
+        /* 特別針對歷年趨勢圖這種多行數據的列表修正 */
+        .google-visualization-tooltip-item-list,
+        .google-visualization-tooltip-item-list *,
+        .google-visualization-tooltip-item {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+        }
+        
+        /* 修正圓餅圖指向標籤的細線顏色 */
+        path[stroke="#333333"], path[stroke="#636363"] {stroke: #8b949e !important;}
         
         /* 如果有使用 Google Table，修正表格文字 */
         .google-visualization-table-table {color: #333 !important; /* 表格通常背景是白的，文字保持深色 */}
@@ -34,12 +52,7 @@
             border: none !important;
             box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
             padding: 10px !important;
-        }
-              
-        .google-visualization-tooltip-item text {fill: #333333 !important;}
-        
-        /* 確保提示框內的數據列表文字也是深色 */
-        .google-visualization-tooltip-item-list {color: #333333 !important;}
+        }              
 
         /* 進階版：將提示框改為深色主題 */
         .google-visualization-tooltip {
@@ -351,6 +364,10 @@
         annotations: {
             textStyle: { color: '#e6e6e6' } // 針對柱狀圖上的文字
         }
+        tooltip: { 
+                isHtml: true, // 強制使用 HTML 格式渲染提示框，這讓 CSS 更好控制
+                textStyle: { color: '#ffffff', fontSize: 14 } 
+        }        
     };
         
     function initDashboard() {
