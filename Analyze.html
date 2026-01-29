@@ -2,7 +2,7 @@
 <html>
 <head>
     <base target="_top">
-    <title>數據分析儀表板 V1.2.6 </title>
+    <title>數據分析儀表板 V1.2.7 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -601,10 +601,32 @@
     
       const isMobile = window.innerWidth < 600;
     
+      // 這裡維持你的標籤組合方式
       const rows = data.map(i => {
         const percent = total > 0 ? (i.count / total * 100).toFixed(1) : 0;
         return [isMobile ? i.label : `${i.label} ${percent}%`, i.count];
       });
+    
+      dt.addRows(rows);
+    
+      new google.visualization.PieChart(document.getElementById('paymentChartContainer')).draw(dt, {
+        ...darkThemeOptions,
+        pieHole: 0.5,
+        is3D: false,
+        // 關鍵修改點 1：將 legend 設為 'labeled' 或 'right' 並確保標籤不重複顯示百分比
+        legend: isMobile
+          ? { position: 'bottom', textStyle: { fontSize: 12, color: '#e6e6e6' } }
+          : { position: 'labeled', textStyle: { fontSize: 14, color: '#e6e6e6' } },
+        
+        // 關鍵修改點 2：強制設定 pieResidueSliceLabel 或 sliceText
+        // 避免 Google Chart 再次自動產生百分比字串
+        pieSliceText: 'none', 
+        
+        colors: ['#4e73df', '#e74a3b', '#f6c23e', '#36b9cc'],
+        chartArea: { left: '5%', top: '5%', width: '90%', height: '85%' },
+        tooltip: { ...darkThemeOptions.tooltip, trigger: 'focus' }
+      });
+    }
     
       // ✅ 你漏掉的關鍵一行
       dt.addRows(rows);
