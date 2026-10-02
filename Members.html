@@ -120,7 +120,7 @@
                   <input type="tel" id="newPhoneInput" class="form-control" inputmode="tel" autocomplete="off" placeholder="新手機號碼，例如：0987654321" aria-describedby="phoneUpdateHelp">
                   <button id="btnUpdatePhone" type="button" class="btn btn-warning" onclick="confirmUpdatePhone()">儲存新手機</button>
                 </div>
-                <div id="phoneUpdateHelp" class="form-text">保留原會員編號、姓名與來店次數。新號碼不可已登記於其他客戶。</div>
+                <div id="phoneUpdateHelp" class="form-text">僅更新手機，所有原會員資料不變。新號碼已有客戶時，需另行確認備份及移除重複資料。</div>
               </div>
             </div>
           </div>
@@ -284,16 +284,38 @@
       showLoading(true);
       document.getElementById('statusMsg').textContent = '正在更新手機號碼，請勿重複操作...';
       let updated = false;
+      let cancelled = false;
       let updateMessage = '';
       try {
-        const response = await callApi('updateMemberPhone', {
-          oldPhone: member.phone, newPhone: newPhone, memberId: member.memberId
-        });
+        const request = { oldPhone: member.phone, newPhone: newPhone, memberId: member.memberId };
+        let response = await callApi('updateMemberPhone', request);
+        if (response && response.requiresMerge === true) {
+          showLoading(false);
+          const source = response.source;
+          const target = response.target;
+          const message = `新號碼已有一筆 CRM 資料，請確認是同一位客人：\n\n` +
+            `原會員：${source.name || '未填姓名'}／${source.phone}／${response.memberId}\n` +
+            `新號碼資料：${target.name || '未填姓名'}／${target.phone}\n\n` +
+            `只更換原會員手機；姓名、會員編號、設定、備註、來店次數與日期全部不變。\n` +
+            `新號碼的重複 CRM 資料會先備份，再移出有效資料，不會加總來店次數。\n` +
+            `歷史來店紀錄與訂單不變。確定是同一位客人並繼續嗎？`;
+          if (!confirm(message)) {
+            cancelled = true;
+          } else {
+            showLoading(true);
+            document.getElementById('statusMsg').textContent = '正在備份並更新手機，請勿重複操作...';
+            response = await callApi('updateMemberPhone', {
+              ...request, confirmMerge: true, mergeToken: response.mergeToken
+            });
+          }
+        }
+        if (cancelled) return;
         if (!response || response.success !== true) {
           throw new Error((response && response.error) || '後端未確認更新成功');
         }
         updated = true;
         updateMessage = response.message || '手機號碼已更新。';
+        if (response.backupSheet) updateMessage += '\n備份工作表：' + response.backupSheet;
         if (response.warning) updateMessage += '\n' + response.warning;
         document.getElementById('phoneInput').value = newPhone;
         alert(updateMessage);
@@ -302,7 +324,8 @@
         alert('未能確認更新結果：' + err.message + '\n請先查詢新號碼；若查不到，再查詢舊號碼後重試。');
       } finally {
         setMemberWriteBusy(false);
-        invalidateMemberLookup();
+        if (!cancelled) invalidateMemberLookup();
+        else document.getElementById('statusMsg').textContent = '已取消，資料未變更。';
       }
       if (updated) {
         loadTable();
