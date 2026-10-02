@@ -9,13 +9,19 @@ function server(rows = [member.slice()], options = {}) {
   const calls = { writes: 0, cache: 0, sync: 0, release: 0 };
   const sheet = {
     getLastRow: () => rows.length + 1,
+    getLastColumn: () => 14,
+    copyTo: () => { if(options.backupFailure) throw Error('backup'); return { setName: () => {} }; },
     getRange: (r, c) => ({
-      getValues: () => rows.map(row => row.slice(0, 10)),
+      getValues: () => rows.map(row => row.slice()),
+      getFormulas: () => [Array(14).fill(options.formulas ? '=1' : '')],
+      setValues: values => { calls.writes++; rows[r - 2] = Array.from(values[0]); },
+      clearContent: () => { if(options.clearFailure) throw Error('clear'); calls.writes++; rows[r - 2] = Array(14).fill(''); },
       setValue: value => { calls.writes++; rows[r - 2][c - 1] = value; }
     })
   };
   const ctx = vm.createContext({
-    COL: { PHONE: 2, MEMBER_ID: 10 }, IDX: name => ({ PHONE: 1, MEMBER_ID: 9 })[name],
+    COL: { PHONE: 2, MEMBER_ID: 10, LAST_VISIT_TIMESTAMP: 14 }, IDX: name => ({ PHONE: 1, MEMBER_ID: 9, NAME: 2, VISIT_COUNT: 12 })[name],
+    Utilities: { base64EncodeWebSafe: v => v, computeDigest: (algo, text) => text, DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' }, formatDate: () => 'test', getUuid: () => '12345678' },
     SPREADSHEET_ID: 'test', CRM_SHEET_NAME: 'CRM',
     normalizePhone: p => String(p || '').replace(/\D/g, ''),
     formatPhoneNumber: p => p.replace(/(\d{4})(\d{3})(\d{3})/, '$1-$2-$3'),
@@ -40,13 +46,36 @@ for (const data of [
   s = server(); assert.ok(s.run(data).error); assert.equal(s.calls.writes, 0);
 }
 s = server([member.slice(), member.map((v, i) => i === 1 ? '0987-654-321' : v)]);
-assert.ok(s.run(payload).error); assert.equal(s.calls.writes, 0);
+assert.equal(s.run(payload).requiresMerge, true); assert.equal(s.calls.writes, 0);
 s = server([member.slice(), member.slice()]);
 assert.ok(s.run(payload).error); assert.equal(s.calls.writes, 0);
 s = server([], {}); assert.ok(s.run(payload).error);
 s = server(undefined, { busy: true }); assert.ok(s.run(payload).error); assert.equal(s.calls.writes, 0);
 s = server(undefined, { syncFailure: true });
 const partial = s.run(payload); assert.equal(partial.success, true); assert.ok(partial.warning); assert.equal(s.calls.release, 1);
+
+// Collision confirmation preserves every original field, including visits and dates.
+const duplicate = member.map((v, i) => i === 1 ? '0987-654-321' : i === 9 ? '' : i === 12 ? 99 : 'different');
+s = server([member.slice(), duplicate.slice()]);
+let preview = s.run(payload);
+assert.equal(preview.requiresMerge, true); assert.equal(s.calls.writes, 0);
+assert.ok(s.run({ ...payload, confirmMerge: true, mergeToken: 'stale' }).error);
+assert.equal(s.run({ ...payload, confirmMerge: true, mergeToken: preview.mergeToken }).success, true);
+assert.deepEqual(s.rows[0], member.map((v,i) => i === 1 ? '0987-654-321' : v));
+assert.ok(s.rows[1].every(v => v === ''));
+assert.ok(s.run({ ...payload, confirmMerge: true, mergeToken: preview.mergeToken }).error);
+s = server([member.slice(), duplicate.map((v,i) => i === 9 ? 'M8' : v)]);
+assert.ok(s.run(payload).error); assert.equal(s.calls.writes, 0);
+s = server([member.slice(), duplicate.slice()]); preview = s.run(payload); s.rows[1][12]++;
+assert.ok(s.run({ ...payload, confirmMerge: true, mergeToken: preview.mergeToken }).error);
+for (const option of ['backupFailure', 'clearFailure', 'formulas']) {
+  s = server([member.slice(), duplicate.slice()], { [option]: true });
+  preview = s.run(payload);
+  if (option === 'formulas') assert.ok(preview.error);
+  else if (option === 'backupFailure') assert.throws(() => s.run({ ...payload, confirmMerge: true, mergeToken: preview.mergeToken }));
+  else assert.ok(s.run({ ...payload, confirmMerge: true, mergeToken: preview.mergeToken }).error);
+  assert.deepEqual(s.rows, [member, duplicate]);
+}
 
 const html = fs.readFileSync(path.join(root, 'Members.html'), 'utf8');
 const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
@@ -107,5 +136,25 @@ const result = phone => ({ hasId: true, existingId: 'F33(4)', customer: { phone,
   assert.equal(elements.phoneUpdateBox.style.display, 'none');
   assert.equal(elements.btnUpdatePhone.disabled, false);
   assert.ok(alerts.some(msg => msg.includes('未能確認更新結果')));
+  // Cancel merge preview: no second request and original selection remains usable.
+  ctx.callApi = async () => result('0912-345-678');
+  elements.phoneInput.value = '0912345678'; await ctx.checkPhone();
+  elements.newPhoneInput.value = '0987654321';
+  let confirms = 0, mergeCalls = 0;
+  ctx.confirm = () => ++confirms === 1;
+  const mergePreview = { requiresMerge: true, mergeToken: 'token', memberId: 'F33(4)', source: { name: 'Old', phone: '0912345678' }, target: { name: 'New', phone: '0987654321' } };
+  ctx.callApi = async () => { mergeCalls++; return mergePreview; };
+  await ctx.confirmUpdatePhone(); assert.equal(mergeCalls, 1);
+  assert.equal(elements.phoneUpdateBox.style.display, 'block');
+  assert.equal(elements.statusMsg.textContent, '已取消，資料未變更。');
+  ctx.confirm = () => true;
+  ctx.callApi = async (action, data) => {
+    if (action !== 'updateMemberPhone') return result('0987-654-321');
+    if (!data.confirmMerge) return mergePreview;
+    assert.equal(data.mergeToken, 'token');
+    return { success: true, backupSheet: 'backup' };
+  };
+  await ctx.confirmUpdatePhone();
+  assert.equal(elements.phoneInput.value, '0987654321');
   console.log('PASS: backend validation/preservation/locking/partial sync and frontend stale lookup/double submit/failure recovery');
 })().catch(err => { console.error(err); process.exitCode = 1; });
